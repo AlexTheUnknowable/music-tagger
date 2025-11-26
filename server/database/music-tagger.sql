@@ -4,6 +4,23 @@ BEGIN TRANSACTION;
 -- *************************************************************************************************
 -- Drop all db objects in the proper order
 -- *************************************************************************************************
+DROP TABLE IF EXISTS source_merge_log CASCADE;
+DROP TABLE IF EXISTS source_merge_vote CASCADE;
+DROP TABLE IF EXISTS artist_merge_log CASCADE;
+DROP TABLE IF EXISTS artist_merge_vote CASCADE;
+DROP TABLE IF EXISTS track_merge_log CASCADE;
+DROP TABLE IF EXISTS track_merge_vote CASCADE;
+DROP TABLE IF EXISTS track_tag_counter CASCADE;
+DROP TABLE IF EXISTS track_tag_downvote CASCADE;
+DROP TABLE IF EXISTS track_tag CASCADE;
+DROP TABLE IF EXISTS track_alias CASCADE;
+DROP TABLE IF EXISTS track_artist CASCADE;
+DROP TABLE IF EXISTS link_downvote CASCADE;
+DROP TABLE IF EXISTS link CASCADE;
+DROP TABLE IF EXISTS tag CASCADE;
+DROP TABLE IF EXISTS track CASCADE;
+DROP TABLE IF EXISTS source CASCADE;
+DROP TABLE IF EXISTS artist CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
 -- *************************************************************************************************
