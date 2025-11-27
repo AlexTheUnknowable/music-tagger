@@ -1,5 +1,6 @@
-package com.alextheunknowable.musictagger.model;
+package com.alextheunknowable.musictagger.model.auth;
 
+import com.alextheunknowable.musictagger.model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

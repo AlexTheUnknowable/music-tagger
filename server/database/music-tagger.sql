@@ -13,8 +13,8 @@ DROP TABLE IF EXISTS track_merge_vote CASCADE;
 DROP TABLE IF EXISTS track_tag_counter CASCADE;
 DROP TABLE IF EXISTS track_tag_downvote CASCADE;
 DROP TABLE IF EXISTS track_tag CASCADE;
-DROP TABLE IF EXISTS track_alias CASCADE;
 DROP TABLE IF EXISTS track_artist CASCADE;
+DROP TABLE IF EXISTS track_alias CASCADE;
 DROP TABLE IF EXISTS link_downvote CASCADE;
 DROP TABLE IF EXISTS link CASCADE;
 DROP TABLE IF EXISTS tag CASCADE;
@@ -75,18 +75,18 @@ CREATE TABLE link_downvote (
     UNIQUE(link_id, user_id)
 );
 
-CREATE TABLE track_artist (
-    track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
-    artist_id INTEGER NOT NULL REFERENCES artist(id) ON DELETE CASCADE,
-    PRIMARY KEY(track_id, artist_id)
-);
-
 CREATE TABLE track_alias (
     id SERIAL PRIMARY KEY,
     track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
     alias TEXT NOT NULL,
     uploaded_by INTEGER REFERENCES users(id),
     UNIQUE(track_id, alias)
+);
+
+CREATE TABLE track_artist (
+    track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
+    artist_id INTEGER NOT NULL REFERENCES artist(id) ON DELETE CASCADE,
+    PRIMARY KEY(track_id, artist_id)
 );
 
 CREATE TABLE track_tag (
@@ -178,6 +178,6 @@ INSERT INTO users (username, password_hash, role) VALUES
     ('user1', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_USER'),
     ('user2', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_USER'),
     ('user3', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_USER'),
-    ('admin','$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_ADMIN');
+    ('admin', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_ADMIN');
 
 COMMIT TRANSACTION;

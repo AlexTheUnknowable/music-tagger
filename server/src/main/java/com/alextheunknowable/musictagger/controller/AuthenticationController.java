@@ -1,10 +1,10 @@
 package com.alextheunknowable.musictagger.controller;
 
 import com.alextheunknowable.musictagger.dao.UserDao;
-import com.alextheunknowable.musictagger.model.LoginResponseDto;
+import com.alextheunknowable.musictagger.model.auth.LoginResponseDto;
 import com.alextheunknowable.musictagger.security.jwt.TokenProvider;
-import com.alextheunknowable.musictagger.model.LoginDto;
-import com.alextheunknowable.musictagger.model.RegisterUserDto;
+import com.alextheunknowable.musictagger.model.auth.LoginDto;
+import com.alextheunknowable.musictagger.model.auth.RegisterUserDto;
 import com.alextheunknowable.musictagger.model.User;
 import jakarta.validation.Valid;
 
@@ -15,8 +15,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.math.BigDecimal;
 
 /**
  * AuthenticationController is a class used for handling requests to authenticate Users.

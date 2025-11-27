@@ -1,4 +1,4 @@
-package com.alextheunknowable.musictagger.model;
+package com.alextheunknowable.musictagger.model.auth;
 
 import jakarta.validation.constraints.NotEmpty;
 

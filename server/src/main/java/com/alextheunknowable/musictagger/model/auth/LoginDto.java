@@ -1,4 +1,4 @@
-package com.alextheunknowable.musictagger.model;
+package com.alextheunknowable.musictagger.model.auth;
 
 /**
  * LoginDto is a class used to hold the user login information that's sent from the
