@@ -1,4 +1,33 @@
 package com.alextheunknowable.musictagger.model;
 
 public class Artist {
+    private int id;
+    private String name;
+    private int uploadedByUserId;
+
+    public Artist() {}
+    public Artist(int id, String name, int uploadedByUserId) {
+        this.id = id;
+        this.name = name;
+        this.uploadedByUserId = uploadedByUserId;
+    }
+
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getUploadedByUserId() {
+        return uploadedByUserId;
+    }
+    public void setUploadedByUserId(int uploadedByUser) {
+        this.uploadedByUserId = uploadedByUserId;
+    }
 }

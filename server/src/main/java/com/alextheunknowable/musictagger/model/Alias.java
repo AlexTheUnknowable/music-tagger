@@ -1,18 +1,18 @@
 package com.alextheunknowable.musictagger.model;
 
-public class Link {
+public class Alias {
     private int id;
     private OriginType originType;
     private int originId;
-    private String url;
+    private String alias;
     private int uploadedByUserId;
 
-    public Link() {}
-    public Link(int id, OriginType originType, int originId, String url, int uploadedByUserId) {
+    public Alias() {}
+    public Alias(int id, OriginType originType, int originId, String alias, int uploadedByUserId) {
         this.id = id;
         this.originType = originType;
         this.originId = originId;
-        this.url = url;
+        this.alias = alias;
         this.uploadedByUserId = uploadedByUserId;
     }
 
@@ -34,11 +34,11 @@ public class Link {
     public void setOriginId(int originId) {
         this.originId = originId;
     }
-    public String getUrl() {
-        return url;
+    public String getAlias() {
+        return alias;
     }
-    public void setUrl(String url) {
-        this.url = url;
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
     public int getUploadedByUserId() {
         return uploadedByUserId;
