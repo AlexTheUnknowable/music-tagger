@@ -1,0 +1,130 @@
+package com.alextheunknowable.musictagger.dao;
+
+import com.alextheunknowable.musictagger.exception.DaoException;
+import com.alextheunknowable.musictagger.model.Tag;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class JdbcTagDao implements TagDao{
+    private final JdbcTemplate jdbcTemplate;
+
+    public JdbcTagDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @Override
+    public List<Tag> getTags() {
+        List<Tag> tags = new ArrayList<>();
+        String sql = "SELECT * FROM tag ORDER BY id;";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+            while (results.next()) {
+                Tag tag = mapRowToTag(results);
+                tags.add(tag);
+            }
+        }
+        catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+        return tags;
+    }
+
+    @Override
+    public Tag getTagById(int tagId) {
+        Tag tag = null;
+        String sql = "SELECT * FROM tag WHERE id = ?";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, tagId);
+            if (results.next()) {
+                tag = mapRowToTag(results);
+            }
+        }
+        catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+        return tag;
+    }
+
+    @Override
+    public Tag getTagByName(String name) {
+        if (name == null) name = "";
+        Tag tag = null;
+        String sql = "SELECT * FROM tag WHERE name = ?";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, name);
+            if (results.next()) tag = mapRowToTag(results);
+        }
+        catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+        return tag;
+    }
+
+    @Override
+    public Tag createTag(Tag newTag) {
+        Tag tag = null;
+        String insertTagSql = "INSERT INTO tag (name) VALUES (?) RETURNING id";
+        //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!!
+        //if (newTag.getName() == null || newTag.getName().isBlank()) throw new DaoException("Tag cannot be created with null/blank name");
+        try {
+            int tagId = jdbcTemplate.queryForObject(insertTagSql, int.class, newTag.getName());
+            tag = getTagById(tagId);
+        }
+        catch (NullPointerException e) {
+            throw new DaoException("Jdbc query returned a null object", e);
+        }
+        catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+        catch (DataIntegrityViolationException e) {
+            throw new DaoException("Data integrity violation", e);
+        }
+        return tag;
+    }
+
+    @Override
+    public Tag updateTag(Tag tag) {
+        Tag updatedTag = null;
+        String updateTagSql = "UPDATE tag SET name = ? WHERE id = ?;";
+        try {
+            int numberOfRows = jdbcTemplate.update(updateTagSql, tag.getName(), tag.getId());
+            if (numberOfRows == 0) {
+                throw new DaoException("0 rows affected, expected at least 1");
+            } else {
+                updatedTag = getTagById(tag.getId());
+            }
+        } catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
+        }
+        return updatedTag;
+    }
+
+    @Override
+    public int deleteTagById(int tagId) {
+        int numberOfRows = 0;
+        //String deleteItemSql = "DELETE FROM item WHERE card_id = ?;";
+        //String deleteCardTypeSql = "DELETE FROM card_type WHERE card_id = ?;";
+        String deleteTagSql = "DELETE FROM tag WHERE id = ?;";
+        try {
+            //jdbcTemplate.update(deleteItemSql, cardId);
+            //jdbcTemplate.update(deleteCardTypeSql, cardId);
+            numberOfRows = jdbcTemplate.update(deleteTagSql, tagId);
+        } catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
+        }
+        return numberOfRows;
+    }
+
+    private Tag mapRowToTag(SqlRowSet rs) {
+        Tag tag = new Tag();
+        tag.setId(rs.getInt("id"));
+        tag.setName(rs.getString("name"));
+        return tag;
+    }
+}
