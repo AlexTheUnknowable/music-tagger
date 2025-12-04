@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS track_merge_vote CASCADE;
 DROP TABLE IF EXISTS track_tag_counter CASCADE;
 DROP TABLE IF EXISTS track_tag_downvote CASCADE;
 DROP TABLE IF EXISTS track_tag CASCADE;
+DROP TABLE IF EXISTS artist_source CASCADE;
 DROP TABLE IF EXISTS track_artist CASCADE;
 DROP TABLE IF EXISTS track_alias CASCADE;
 DROP TABLE IF EXISTS link_downvote CASCADE;
@@ -56,7 +57,8 @@ CREATE TABLE track (
 
 CREATE TABLE tag (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    uploaded_by INTEGER REFERENCES users(id)
 );
 
 CREATE TABLE link (
@@ -87,6 +89,12 @@ CREATE TABLE track_artist (
     track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
     artist_id INTEGER NOT NULL REFERENCES artist(id) ON DELETE CASCADE,
     PRIMARY KEY(track_id, artist_id)
+);
+
+CREATE TABLE artist_source (
+    artist_id INTEGER NOT NULL REFERENCES artist(id) ON DELETE CASCADE,
+	source_id INTEGER NOT NULL REFERENCES source(id) ON DELETE CASCADE,
+    PRIMARY KEY(artist_id, source_id)
 );
 
 CREATE TABLE track_tag (

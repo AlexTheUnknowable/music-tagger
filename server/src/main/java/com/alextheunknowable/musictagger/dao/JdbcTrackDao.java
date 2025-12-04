@@ -70,7 +70,7 @@ public class JdbcTrackDao implements TrackDao{
     public Track createTrack(Track newTrack) {
         Track track = null;
         String insertTrackSql = "INSERT INTO track (name, source_id, uploaded_by) VALUES (?, ?, ?) RETURNING id";
-        //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!!
+        //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!! i think
         //if (newTrack.getName() == null || newTrack.getName().isBlank()) throw new DaoException("Track cannot be created with null/blank name");
         try {
             int trackId = jdbcTemplate.queryForObject(insertTrackSql, int.class, newTrack.getName(), newTrack.getSourceId(), newTrack.getUploadedByUserId());

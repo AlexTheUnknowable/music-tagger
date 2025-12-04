@@ -24,7 +24,7 @@ public class UserController {
     @GetMapping
     public List<User> list() {
         try {
-            return userDao.getUsers();
+            return userDao.getUsers(); //TODO: replace with service call
         } catch (DaoException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "could not get cards: " + e.getMessage());
         }
@@ -33,7 +33,7 @@ public class UserController {
     @GetMapping("/{id}")
     public User get(@PathVariable int id) {
         try {
-            return userDao.getUserById(id);
+            return userDao.getUserById(id); //TODO: replace with service call
         } catch (DaoException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "could not get card: " + e.getMessage());
         }
