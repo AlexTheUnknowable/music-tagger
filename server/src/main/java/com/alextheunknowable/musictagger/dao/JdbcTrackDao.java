@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class JdbcTrackDao implements TrackDao{
@@ -25,8 +26,7 @@ public class JdbcTrackDao implements TrackDao{
         try {
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
             while (results.next()) {
-                Track track = mapRowToTrack(results);
-                tracks.add(track);
+                tracks.add(mapRowToTrack(results));
             }
         }
         catch (CannotGetJdbcConnectionException e) {
@@ -41,9 +41,7 @@ public class JdbcTrackDao implements TrackDao{
         String sql = "SELECT * FROM track WHERE id = ?";
         try {
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql, trackId);
-            if (results.next()) {
-                track = mapRowToTrack(results);
-            }
+            if (results.next()) track = mapRowToTrack(results);
         }
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
@@ -55,9 +53,9 @@ public class JdbcTrackDao implements TrackDao{
     public Track getTrackByName(String name) {
         if (name == null) name = "";
         Track track = null;
-        String sql = "SELECT * FROM track WHERE name = ?";
+        String sql = "SELECT * FROM track WHERE LOWER(name) LIKE LOWER(?)";
         try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, name);
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, "%" + name + "%");
             if (results.next()) track = mapRowToTrack(results);
         }
         catch (CannotGetJdbcConnectionException e) {
@@ -67,10 +65,96 @@ public class JdbcTrackDao implements TrackDao{
     }
 
     @Override
+    public List<Track> getTracksByArtist(int artistId) {
+        List<Track> tracks = new ArrayList<>();
+        String sql = "SELECT * FROM track " +
+                     "JOIN track_artist ON track.id = track_artist.track_id " +
+                     "WHERE track_artist.artist_id = ?;";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, artistId);
+            while (results.next()) {
+                tracks.add(mapRowToTrack(results));
+            }
+        }
+        catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+        return tracks;
+    }
+
+    @Override
+    public List<Track> getTracksBySource(int sourceId) {
+        List<Track> tracks = new ArrayList<>();
+        String sql = "SELECT * FROM track WHERE source_id = ?";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, sourceId);
+            while (results.next()) {
+                tracks.add(mapRowToTrack(results));
+            }
+        }
+        catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+        return tracks;
+    }
+
+    @Override
+    public List<Track> getTracksByGlobalTags(List<Integer> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) throw new DaoException("Tried to fetch by tag with null or empty tag list");
+        List<Track> tracks = new ArrayList<>();
+        String placeholders = String.join(",", Collections.nCopies(tagIds.size(), "?"));
+        String sql = "SELECT track.* FROM track " +
+                     "JOIN track_tag_counter AS ttc ON track.id = ttc.track_id " +
+                     "WHERE ttc.tag_id IN (" + placeholders + ") " +
+                     "GROUP BY track.id " +
+                     "HAVING COUNT(DISTINCT ttc.tag_id) = ? " +
+                     "ORDER BY SUM(ttc.vote_count) DESC;";
+        List<Integer> params = new ArrayList<>(tagIds);
+        params.add(tagIds.size());
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, params.toArray());
+            while (results.next()) {
+                tracks.add(mapRowToTrack(results));
+            }
+        }
+        catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+        return tracks;
+    }
+
+    @Override
+    public List<Track> getTracksByUserTags(int userId, List<Integer> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) throw new DaoException("Tried to fetch by tag with null or empty tag list");
+        List<Track> tracks = new ArrayList<>();
+        String placeholders = String.join(",", Collections.nCopies(tagIds.size(), "?"));
+        String sql = "SELECT track.* FROM track " +
+                     "JOIN track_tag AS tt ON track.id = tt.track_id " +
+                     "WHERE tt.user_id = ? AND tt.tag_id IN (" + placeholders + ") " +
+                     "GROUP BY track.id " +
+                     "HAVING COUNT(DISTINCT tt.tag_id) = ? " +
+                     "ORDER BY track.name;"; // TODO: change to time created
+        List<Integer> params = new ArrayList<>();
+        params.add(userId);
+        params.addAll(tagIds);
+        params.add(tagIds.size());
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, params.toArray());
+            while (results.next()) {
+                tracks.add(mapRowToTrack(results));
+            }
+        }
+        catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+        return tracks;
+    }
+
+    @Override
     public Track createTrack(Track newTrack) {
         Track track = null;
         String insertTrackSql = "INSERT INTO track (name, source_id, uploaded_by) VALUES (?, ?, ?) RETURNING id";
-        //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!! i think
+        //HEY!! THIS (the commented out code below) LOGIC SHOULD BE IN THE SERVICE!!!!!!!! i think
         //if (newTrack.getName() == null || newTrack.getName().isBlank()) throw new DaoException("Track cannot be created with null/blank name");
         try {
             int trackId = jdbcTemplate.queryForObject(insertTrackSql, int.class, newTrack.getName(), newTrack.getSourceId(), newTrack.getUploadedByUserId());

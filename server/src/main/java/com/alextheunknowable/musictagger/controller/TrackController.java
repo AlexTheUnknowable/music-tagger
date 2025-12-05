@@ -21,9 +21,9 @@ public class TrackController {
     public List<Track> list(@RequestParam(required = false) String name,
                             @RequestParam(required = false) Integer artistId,
                             @RequestParam(required = false) Integer sourceId,
-                            @RequestParam(required = false) Object tags,
-                            @RequestParam(required = false) Object yourTags) {
-        return trackService.getTracks(name, artistId, sourceId, tags, yourTags);
+                            @RequestParam(required = false, defaultValue = "") List<Integer> globalTagIds,
+                            @RequestParam(required = false, defaultValue = "") List<Integer> userTagIds) {
+        return trackService.getTracks(name, artistId, sourceId, globalTagIds, userTagIds);
     }
 
     @GetMapping("/{id}")

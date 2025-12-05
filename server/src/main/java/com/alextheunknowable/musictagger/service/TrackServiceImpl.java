@@ -6,6 +6,8 @@ import com.alextheunknowable.musictagger.model.Track;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TrackServiceImpl implements TrackService{
     private final TrackDao trackDao;
@@ -14,27 +16,41 @@ public class TrackServiceImpl implements TrackService{
     }
 
     @Override
-    public List<Track> getTracks(String name, Integer artistId, Integer sourceId, Object tags, Object yourTags) {
+    public List<Track> getTracks(String name,
+                                 Integer artistId,
+                                 Integer sourceId,
+                                 List<Integer> globalTagIds,
+                                 List<Integer> userTagIds) {
+
+        // artist/source filters
         List<Track> tracks;
-        if (artistId != null || sourceId != null) {
-            tracks = trackDao.getTracksByArtistOrSourceOrWhateverMan();
+        if (artistId != null) {
+            tracks = trackDao.getTracksByArtist(artistId);
+        } else if (sourceId != null) {
+            tracks = trackDao.getTracksBySource(sourceId);
         } else {
             tracks = trackDao.getTracks();
         }
-        if (tags == null && yourTags == null) {
-            if (name == null) return tracks;
-            if (name.isBlank()) return tracks;
+
+        // tag filters
+        if (globalTagIds != null && !globalTagIds.isEmpty()) {
+            List<Track> globalTaggedTracks = trackDao.getTracksByGlobalTags(globalTagIds);
+            tracks = intersect(tracks, globalTaggedTracks);
+        }
+        if (userTagIds != null && !userTagIds.isEmpty()) {
+            int userId = 1; // TODO: get from Principal
+            List<Track> userTaggedTracks = trackDao.getTracksByUserTags(userId, userTagIds);
+            tracks = intersect(tracks, userTaggedTracks);
         }
 
-        // If we've reached this part of the code, we're filtering by name, tags, or both.
-        // could probly be structured better but fine for now lol
-        if ((tags != null || yourTags != null) && name != null) { // filtering by tags and names
-            return filterByName(filterByTags(tracks, tagsOrYourTagsOrSOmethingIdk), name);
-        } else if (tags != null || yourTags != null) { // filtering by tags only
-            return filterByTags(tracks, tagsOrYourTagsOrSOmethingIdk);
-        } else { // filtering by names only
-            return filterByName(tracks, name);
+        // name filter
+        if (name != null && !name.isBlank()) {
+            tracks = tracks.stream()
+                    .filter(track -> track.getName().toLowerCase().contains(name.toLowerCase()))
+                    .toList();
         }
+
+        return tracks;
     }
 
     @Override
@@ -59,23 +75,11 @@ public class TrackServiceImpl implements TrackService{
         //requires user to be admin or uploader
     }
 
-    private List<Track> filterByTags(List<Track> tracks, Object tags) {
-        List<Track> matching = new ArrayList<>();
-        for (Track track : tracks) {
-            if (boolean trackHasTagsOrYOuHaveAssignedThistagIdkManhdvjyeaghfa) {
-                matching.add(track);
-            }
-        }
-        return matching;
-    }
-
-    private List<Track> filterByName(List<Track> tracks, String name) {
-        List<Track> matching = new ArrayList<>();
-        for (Track track : tracks) {
-            if (track.getName().contains(name)) {
-                matching.add(track);
-            }
-        }
-        return matching;
+    private List<Track> intersect(List<Track> a, List<Track> b) {
+        if (a.isEmpty() || b.isEmpty()) return List.of();
+        Set<Integer> ids = b.stream().map(Track::getId).collect(Collectors.toSet()); // Put b into a set of IDs for fast lookup
+        return a.stream()
+                .filter(track -> ids.contains(track.getId()))
+                .toList();
     }
 }
