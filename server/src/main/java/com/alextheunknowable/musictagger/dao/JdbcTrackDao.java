@@ -32,6 +32,9 @@ public class JdbcTrackDao implements TrackDao{
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
+        catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
+        }
         return tracks;
     }
 
@@ -46,22 +49,30 @@ public class JdbcTrackDao implements TrackDao{
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
+        catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
+        }
         return track;
     }
 
     @Override
-    public Track getTrackByName(String name) {
+    public List<Track> getTracksByName(String name) {
         if (name == null) name = "";
-        Track track = null;
+        List<Track> tracks = new ArrayList<>();
         String sql = "SELECT * FROM track WHERE LOWER(name) LIKE LOWER(?)";
         try {
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql, "%" + name + "%");
-            if (results.next()) track = mapRowToTrack(results);
+            while (results.next()) {
+                tracks.add(mapRowToTrack(results));
+            }
         }
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
-        return track;
+        catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
+        }
+        return tracks;
     }
 
     @Override
@@ -79,6 +90,9 @@ public class JdbcTrackDao implements TrackDao{
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
+        catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
+        }
         return tracks;
     }
 
@@ -94,6 +108,9 @@ public class JdbcTrackDao implements TrackDao{
         }
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
+        }
+        catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
         }
         return tracks;
     }
@@ -119,6 +136,9 @@ public class JdbcTrackDao implements TrackDao{
         }
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
+        }
+        catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
         }
         return tracks;
     }
@@ -147,6 +167,9 @@ public class JdbcTrackDao implements TrackDao{
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
+        catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
+        }
         return tracks;
     }
 
@@ -168,6 +191,9 @@ public class JdbcTrackDao implements TrackDao{
         }
         catch (DataIntegrityViolationException e) {
             throw new DaoException("Data integrity violation", e);
+        }
+        catch (DataAccessException e) {
+            throw new DaoException(e.getMessage());
         }
         return track;
     }

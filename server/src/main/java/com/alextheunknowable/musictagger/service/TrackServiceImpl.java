@@ -1,6 +1,7 @@
 package com.alextheunknowable.musictagger.service;
 
 import com.alextheunknowable.musictagger.dao.TrackDao;
+import com.alextheunknowable.musictagger.dao.UserDao;
 import com.alextheunknowable.musictagger.model.Track;
 
 import java.security.Principal;
@@ -11,8 +12,10 @@ import java.util.stream.Collectors;
 
 public class TrackServiceImpl implements TrackService{
     private final TrackDao trackDao;
-    public TrackServiceImpl(TrackDao trackDao) {
+    private final UserDao userDao;
+    public TrackServiceImpl(TrackDao trackDao, UserDao userDao) {
         this.trackDao = trackDao;
+        this.userDao = userDao;
     }
 
     @Override
@@ -20,7 +23,8 @@ public class TrackServiceImpl implements TrackService{
                                  Integer artistId,
                                  Integer sourceId,
                                  List<Integer> globalTagIds,
-                                 List<Integer> userTagIds) {
+                                 List<Integer> userTagIds,
+                                 Principal principal) {
 
         // artist/source filters
         List<Track> tracks;
@@ -38,7 +42,7 @@ public class TrackServiceImpl implements TrackService{
             tracks = intersect(tracks, globalTaggedTracks);
         }
         if (userTagIds != null && !userTagIds.isEmpty()) {
-            int userId = 1; // TODO: get from Principal
+            int userId = userDao.getUserByUsername(principal.getName()).getId();
             List<Track> userTaggedTracks = trackDao.getTracksByUserTags(userId, userTagIds);
             tracks = intersect(tracks, userTaggedTracks);
         }
@@ -65,6 +69,7 @@ public class TrackServiceImpl implements TrackService{
 
     @Override
     public Track updateTrack(int id, Track track, Principal principal) {
+        track.setId(id);
         return trackDao.updateTrack(track);
         //requires user to be admin or uploader
     }

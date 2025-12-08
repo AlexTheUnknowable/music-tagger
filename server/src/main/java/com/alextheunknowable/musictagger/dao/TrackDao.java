@@ -7,7 +7,7 @@ import java.util.List;
 public interface TrackDao {
     List<Track> getTracks();
     Track getTrackById(int trackId);
-    Track getTrackByName(String name);
+    List<Track> getTracksByName(String name);
     List<Track> getTracksByArtist(int artistId);
     List<Track> getTracksBySource(int sourceId);
     List<Track> getTracksByGlobalTags(List<Integer> tagIds);
