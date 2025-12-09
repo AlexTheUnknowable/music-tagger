@@ -10,9 +10,8 @@ Built with a modern Java + React stack, this project will demonstrate full CRUD 
 ---
 
 ## 🚗 Project Roadmap
-🛠️ **In Development** – Planning and architecture phase
-- **Create database structure** (current)
-- Implement CRUD endpoints
+- ~~Create database structure~~ 
+- **Implement CRUD endpoints** (current)
 - Build frontend app
 - Connect back and front end with axios
 
