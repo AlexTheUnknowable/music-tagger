@@ -65,6 +65,7 @@ public class TrackServiceImpl implements TrackService{
     @Override
     public Track createTrack(Track track) {
         return trackDao.createTrack(track);
+        // requires name and 1 link, optionally artist, source, and/or more links
     }
 
     @Override
