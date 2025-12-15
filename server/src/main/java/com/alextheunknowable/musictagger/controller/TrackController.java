@@ -1,6 +1,8 @@
 package com.alextheunknowable.musictagger.controller;
 
 import com.alextheunknowable.musictagger.model.Track;
+import com.alextheunknowable.musictagger.model.TrackCreationDto;
+import com.alextheunknowable.musictagger.model.TrackDto;
 import com.alextheunknowable.musictagger.service.TrackService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,8 +38,8 @@ public class TrackController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    public Track add(@Valid @RequestBody Track track) {
-        return trackService.createTrack(track);
+    public TrackDto add(@Valid @RequestBody TrackCreationDto trackCDto, Principal principal) {
+        return trackService.createTrack(trackCDto, principal);
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -48,7 +50,7 @@ public class TrackController {
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        trackService.deleteTrack(id);
+    public void delete(@PathVariable int id, Principal principal) {
+        trackService.deleteTrack(id, principal);
     }
 }

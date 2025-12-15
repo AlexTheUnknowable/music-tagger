@@ -2,12 +2,12 @@ package com.alextheunknowable.musictagger.model;
 
 public class Track {
     private int id;
-    private int sourceId;
+    private Integer sourceId;
     private String name;
     private int uploadedByUserId;
 
     public Track() {}
-    public Track(int id, int sourceId, String name, int uploadedByUserId) {
+    public Track(int id, Integer sourceId, String name, int uploadedByUserId) {
         this.id = id;
         this.sourceId = sourceId;
         this.name = name;
@@ -20,10 +20,10 @@ public class Track {
     public void setId(int id) {
         this.id = id;
     }
-    public int getSourceId() {
+    public Integer getSourceId() {
         return sourceId;
     }
-    public void setSourceId(int sourceId) {
+    public void setSourceId(Integer sourceId) {
         this.sourceId = sourceId;
     }
     public String getName() {

@@ -1,6 +1,8 @@
 package com.alextheunknowable.musictagger.service;
 
 import com.alextheunknowable.musictagger.model.Track;
+import com.alextheunknowable.musictagger.model.TrackCreationDto;
+import com.alextheunknowable.musictagger.model.TrackDto;
 
 import java.security.Principal;
 import java.util.List;
@@ -13,7 +15,7 @@ public interface TrackService {
                           List<Integer> userTagIds,
                           Principal principal);
     Track getTrackById(int id);
-    Track createTrack(Track track);
+    TrackDto createTrack(TrackCreationDto trackCDto, Principal principal);
     Track updateTrack(int id, Track track, Principal principal);
-    void deleteTrack(int id);
+    void deleteTrack(int id, Principal principal);
 }

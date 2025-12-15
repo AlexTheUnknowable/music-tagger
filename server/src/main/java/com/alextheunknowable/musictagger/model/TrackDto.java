@@ -5,8 +5,8 @@ import java.util.List;
 
 public class TrackDto{
     private int id;
-    private int sourceId;
     private String name;
+    private Integer sourceId;
     private int uploadedByUserId;
     private List<Integer> artistIds = new ArrayList<>();
     private List<Integer> linkIds = new ArrayList<>();
@@ -23,7 +23,7 @@ public class TrackDto{
         this.uploadedByUserId = t.getUploadedByUserId();
     }
 
-    public TrackDto(int id, int sourceId, String name, int uploadedByUserId, List<Integer> artistIds,
+    public TrackDto(int id, Integer sourceId, String name, int uploadedByUserId, List<Integer> artistIds,
                     List<Integer> linkIds, List<Integer> tagIds, List<String> aliases, String imageUrl) {
         this.id = id;
         this.sourceId = sourceId;
@@ -42,10 +42,10 @@ public class TrackDto{
     public void setId(int id) {
         this.id = id;
     }
-    public int getSourceId() {
+    public Integer getSourceId() {
         return sourceId;
     }
-    public void setSourceId(int sourceId) {
+    public void setSourceId(Integer sourceId) {
         this.sourceId = sourceId;
     }
     public String getName() {

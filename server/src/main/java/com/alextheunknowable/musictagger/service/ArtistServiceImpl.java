@@ -37,7 +37,14 @@ public class ArtistServiceImpl implements ArtistService{
     @Override
     public Artist createArtist(Artist artist) {
         return artistDao.createArtist(artist);
-        // requires name and 1 link
+    }
+
+    @Override
+    public Artist createArtist(String name, int userId) {
+        Artist newArtist = new Artist();
+        newArtist.setName(name);
+        newArtist.setUploadedByUserId(userId);
+        return artistDao.createArtist(newArtist);
     }
 
     @Override
