@@ -3,6 +3,7 @@ package com.alextheunknowable.musictagger.service;
 import com.alextheunknowable.musictagger.dao.TrackDao;
 import com.alextheunknowable.musictagger.dao.UserDao;
 import com.alextheunknowable.musictagger.model.Track;
+import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Service
 public class TrackServiceImpl implements TrackService{
     private final TrackDao trackDao;
     private final UserDao userDao;
