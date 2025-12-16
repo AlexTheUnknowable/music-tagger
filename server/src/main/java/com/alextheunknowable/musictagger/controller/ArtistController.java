@@ -30,8 +30,8 @@ public class ArtistController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    public Artist add(@Valid @RequestBody Artist artist) {
-        return artistService.createArtist(artist);
+    public Artist add(@Valid @RequestBody Artist artist, Principal principal) {
+        return artistService.createArtist(artist, principal);
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -42,7 +42,7 @@ public class ArtistController {
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        artistService.deleteArtist(id);
+    public void delete(@PathVariable int id, Principal principal) {
+        artistService.deleteArtist(id, principal);
     }
 }

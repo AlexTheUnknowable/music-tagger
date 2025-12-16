@@ -4,14 +4,14 @@ public class Track {
     private int id;
     private Integer sourceId;
     private String name;
-    private int uploadedByUserId;
+    private int uploaderId;
 
     public Track() {}
-    public Track(int id, Integer sourceId, String name, int uploadedByUserId) {
+    public Track(int id, Integer sourceId, String name, int uploaderId) {
         this.id = id;
         this.sourceId = sourceId;
         this.name = name;
-        this.uploadedByUserId = uploadedByUserId;
+        this.uploaderId = uploaderId;
     }
 
     public int getId() {
@@ -32,10 +32,10 @@ public class Track {
     public void setName(String name) {
         this.name = name;
     }
-    public int getUploadedByUserId() {
-        return uploadedByUserId;
+    public int getUploaderId() {
+        return uploaderId;
     }
-    public void setUploadedByUserId(int uploadedByUserId) {
-        this.uploadedByUserId = uploadedByUserId;
+    public void setUploaderId(int uploaderId) {
+        this.uploaderId = uploaderId;
     }
 }

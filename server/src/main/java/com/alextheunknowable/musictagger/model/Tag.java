@@ -3,13 +3,13 @@ package com.alextheunknowable.musictagger.model;
 public class Tag {
     private int id;
     private String name;
-    private int uploadedByUserId;
+    private int uploaderId;
 
     public Tag() {}
-    public Tag(int id, String name, int uploadedByUserId) {
+    public Tag(int id, String name, int uploaderId) {
         this.id = id;
         this.name = name;
-        this.uploadedByUserId = uploadedByUserId;
+        this.uploaderId = uploaderId;
     }
 
     public int getId() {
@@ -24,10 +24,10 @@ public class Tag {
     public void setName(String name) {
         this.name = name;
     }
-    public int getUploadedByUserId() {
-        return uploadedByUserId;
+    public int getUploaderId() {
+        return uploaderId;
     }
-    public void setUploadedByUserId(int uploadedByUserId) {
-        this.uploadedByUserId = uploadedByUserId;
+    public void setUploaderId(int uploaderId) {
+        this.uploaderId = uploaderId;
     }
 }

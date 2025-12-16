@@ -55,11 +55,11 @@ public class JdbcLinkDao implements LinkDao{
     @Override
     public Link createLink(Link newLink) {
         Link link = null;
-        String insertLinkSql = "INSERT INTO link (origin_type, origin_id, url, uploaded_by) VALUES (?, ?, ?, ?) RETURNING id";
+        String insertLinkSql = "INSERT INTO link (origin_type, origin_id, url, uploader_id) VALUES (?, ?, ?, ?) RETURNING id";
         //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!!
         //if (newLink.getName() == null || newLink.getName().isBlank()) throw new DaoException("Link cannot be created with null/blank name");
         try {
-            int linkId = jdbcTemplate.queryForObject(insertLinkSql, int.class, newLink.getOriginType(), newLink.getOriginId(), newLink.getUrl(), newLink.getUploadedByUserId());
+            int linkId = jdbcTemplate.queryForObject(insertLinkSql, int.class, newLink.getOriginType(), newLink.getOriginId(), newLink.getUrl(), newLink.getUploaderId());
             link = getLinkById(linkId);
         }
         catch (NullPointerException e) {
@@ -77,9 +77,9 @@ public class JdbcLinkDao implements LinkDao{
     @Override
     public Link updateLink(Link link) {
         Link updatedLink = null;
-        String updateLinkSql = "UPDATE link SET origin_type = ?, origin_id = ?, url = ?, uploaded_by = ? WHERE id = ?;";
+        String updateLinkSql = "UPDATE link SET origin_type = ?, origin_id = ?, url = ?, uploader_id = ? WHERE id = ?;";
         try {
-            int numberOfRows = jdbcTemplate.update(updateLinkSql, link.getOriginType(), link.getOriginId(), link.getUrl(), link.getUploadedByUserId(), link.getId());
+            int numberOfRows = jdbcTemplate.update(updateLinkSql, link.getOriginType(), link.getOriginId(), link.getUrl(), link.getUploaderId(), link.getId());
             if (numberOfRows == 0) {
                 throw new DaoException("0 rows affected, expected at least 1");
             } else {
@@ -113,7 +113,7 @@ public class JdbcLinkDao implements LinkDao{
         link.setOriginType(OriginType.valueOf(rs.getString("origin_type")));
         link.setOriginId(rs.getInt("origin_id"));
         link.setUrl(rs.getString("url"));
-        link.setUploadedByUserId(rs.getInt("uploaded_by"));
+        link.setUploaderId(rs.getInt("uploader_id"));
         return link;
     }
 }

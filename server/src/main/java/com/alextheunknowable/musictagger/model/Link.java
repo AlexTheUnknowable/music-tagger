@@ -5,15 +5,15 @@ public class Link {
     private OriginType originType;
     private int originId;
     private String url;
-    private int uploadedByUserId;
+    private int uploaderId;
 
     public Link() {}
-    public Link(int id, OriginType originType, int originId, String url, int uploadedByUserId) {
+    public Link(int id, OriginType originType, int originId, String url, int uploaderId) {
         this.id = id;
         this.originType = originType;
         this.originId = originId;
         this.url = url;
-        this.uploadedByUserId = uploadedByUserId;
+        this.uploaderId = uploaderId;
     }
 
     public int getId() {
@@ -40,10 +40,10 @@ public class Link {
     public void setUrl(String url) {
         this.url = url;
     }
-    public int getUploadedByUserId() {
-        return uploadedByUserId;
+    public int getUploaderId() {
+        return uploaderId;
     }
-    public void setUploadedByUserId(int uploadedByUserId) {
-        this.uploadedByUserId = uploadedByUserId;
+    public void setUploaderId(int uploaderId) {
+        this.uploaderId = uploaderId;
     }
 }

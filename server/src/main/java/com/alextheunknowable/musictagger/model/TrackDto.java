@@ -7,7 +7,7 @@ public class TrackDto{
     private int id;
     private String name;
     private Integer sourceId;
-    private int uploadedByUserId;
+    private int uploaderId;
     private List<Integer> artistIds = new ArrayList<>();
     private List<Integer> linkIds = new ArrayList<>();
     private List<Integer> tagIds = new ArrayList<>();
@@ -20,15 +20,15 @@ public class TrackDto{
         this.id = t.getId();
         this.sourceId = t.getSourceId();
         this.name = t.getName();
-        this.uploadedByUserId = t.getUploadedByUserId();
+        this.uploaderId = t.getUploaderId();
     }
 
-    public TrackDto(int id, Integer sourceId, String name, int uploadedByUserId, List<Integer> artistIds,
+    public TrackDto(int id, Integer sourceId, String name, int uploaderId, List<Integer> artistIds,
                     List<Integer> linkIds, List<Integer> tagIds, List<String> aliases, String imageUrl) {
         this.id = id;
         this.sourceId = sourceId;
         this.name = name;
-        this.uploadedByUserId = uploadedByUserId;
+        this.uploaderId = uploaderId;
         this.artistIds = artistIds != null ? new ArrayList<>(artistIds) : new ArrayList<>();
         this.linkIds = linkIds != null ? new ArrayList<>(linkIds) : new ArrayList<>();
         this.tagIds = tagIds != null ? new ArrayList<>(tagIds) : new ArrayList<>();
@@ -54,11 +54,11 @@ public class TrackDto{
     public void setName(String name) {
         this.name = name;
     }
-    public int getUploadedByUserId() {
-        return uploadedByUserId;
+    public int getUploaderId() {
+        return uploaderId;
     }
-    public void setUploadedByUserId(int uploadedByUserId) {
-        this.uploadedByUserId = uploadedByUserId;
+    public void setUploaderId(int uploaderId) {
+        this.uploaderId = uploaderId;
     }
     public List<Integer> getArtistIds() {
         return artistIds;

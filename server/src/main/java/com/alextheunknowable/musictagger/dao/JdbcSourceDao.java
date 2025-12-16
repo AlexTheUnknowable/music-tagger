@@ -69,11 +69,11 @@ public class JdbcSourceDao implements SourceDao{
     @Override
     public Source createSource(Source newSource) {
         Source source = null;
-        String insertSourceSql = "INSERT INTO source (name, uploaded_by) VALUES (?, ?) RETURNING id";
+        String insertSourceSql = "INSERT INTO source (name, uploader_id) VALUES (?, ?) RETURNING id";
         //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!!
         //if (newSource.getName() == null || newSource.getName().isBlank()) throw new DaoException("Source cannot be created with null/blank name");
         try {
-            int sourceId = jdbcTemplate.queryForObject(insertSourceSql, int.class, newSource.getName(), newSource.getUploadedByUserId());
+            int sourceId = jdbcTemplate.queryForObject(insertSourceSql, int.class, newSource.getName(), newSource.getUploaderId());
             source = getSourceById(sourceId);
         }
         catch (NullPointerException e) {
@@ -91,9 +91,9 @@ public class JdbcSourceDao implements SourceDao{
     @Override
     public Source updateSource(Source source) {
         Source updatedSource = null;
-        String updateSourceSql = "UPDATE source SET name = ?, uploaded_by = ? WHERE id = ?;";
+        String updateSourceSql = "UPDATE source SET name = ?, uploader_id = ? WHERE id = ?;";
         try {
-            int numberOfRows = jdbcTemplate.update(updateSourceSql, source.getName(), source.getUploadedByUserId(), source.getId());
+            int numberOfRows = jdbcTemplate.update(updateSourceSql, source.getName(), source.getUploaderId(), source.getId());
             if (numberOfRows == 0) {
                 throw new DaoException("0 rows affected, expected at least 1");
             } else {
@@ -125,7 +125,7 @@ public class JdbcSourceDao implements SourceDao{
         Source source = new Source();
         source.setId(rs.getInt("id"));
         source.setName(rs.getString("name"));
-        source.setUploadedByUserId(rs.getInt("uploaded_by"));
+        source.setUploaderId(rs.getInt("uploader_id"));
         return source;
     }
 }

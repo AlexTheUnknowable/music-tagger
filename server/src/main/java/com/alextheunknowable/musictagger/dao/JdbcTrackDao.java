@@ -2,6 +2,7 @@ package com.alextheunknowable.musictagger.dao;
 
 import com.alextheunknowable.musictagger.exception.DaoException;
 import com.alextheunknowable.musictagger.model.Track;
+import com.alextheunknowable.musictagger.model.TrackSearchCriteria;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
@@ -39,6 +40,41 @@ public class JdbcTrackDao implements TrackDao{
         }
         return tracks;
     }
+
+    @Override
+    public List<Track> getTracks(TrackSearchCriteria tsc, Integer userId) {
+        List<Object> params = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT DISTINCT t.* FROM track t ");
+
+        // Build dynamic joins
+        appendJoins(sql, tsc);
+
+        // Build dynamic WHERE clauses
+        List<String> whereClauses = buildWhereClauses(tsc, userId, params);
+        if (!whereClauses.isEmpty()) {
+            sql.append(" WHERE ").append(String.join(" AND ", whereClauses));
+        }
+
+        // Build HAVING clauses for tag counts
+        List<String> havingClauses = buildHavingClauses(tsc);
+        if (!havingClauses.isEmpty()) {
+            sql.append(" GROUP BY t.id HAVING ").append(String.join(" AND ", havingClauses));
+        }
+
+        sql.append(" ORDER BY t.name;");
+
+        List<Track> tracks = new ArrayList<>();
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql.toString(), params.toArray());
+            while (results.next()) {
+                tracks.add(mapRowToTrack(results));
+            }
+        } catch (DataAccessException e) {
+            throw new DaoException(e.getMessage(), e);
+        }
+        return tracks;
+    }
+
 
     @Override
     public Track getTrackById(int trackId) {
@@ -178,11 +214,11 @@ public class JdbcTrackDao implements TrackDao{
     @Override
     public Track createTrack(Track newTrack) {
         Track track = null;
-        String insertTrackSql = "INSERT INTO track (name, source_id, uploaded_by) VALUES (?, ?, ?) RETURNING id";
+        String insertTrackSql = "INSERT INTO track (name, source_id, uploader_id) VALUES (?, ?, ?) RETURNING id";
         //HEY!! THIS (the commented out code below) LOGIC SHOULD BE IN THE SERVICE!!!!!!!! i think
         //if (newTrack.getName() == null || newTrack.getName().isBlank()) throw new DaoException("Track cannot be created with null/blank name");
         try {
-            int trackId = jdbcTemplate.queryForObject(insertTrackSql, int.class, newTrack.getName(), newTrack.getSourceId(), newTrack.getUploadedByUserId());
+            int trackId = jdbcTemplate.queryForObject(insertTrackSql, int.class, newTrack.getName(), newTrack.getSourceId(), newTrack.getUploaderId());
             track = getTrackById(trackId);
         }
         catch (NullPointerException e) {
@@ -203,9 +239,9 @@ public class JdbcTrackDao implements TrackDao{
     @Override
     public Track updateTrack(Track track) {
         Track updatedTrack = null;
-        String updateTrackSql = "UPDATE track SET name = ?, source_id = ?, uploaded_by = ? WHERE id = ?;";
+        String updateTrackSql = "UPDATE track SET name = ?, source_id = ?, uploader_id = ? WHERE id = ?;";
         try {
-            int numberOfRows = jdbcTemplate.update(updateTrackSql, track.getName(), track.getSourceId(), track.getUploadedByUserId(), track.getId());
+            int numberOfRows = jdbcTemplate.update(updateTrackSql, track.getName(), track.getSourceId(), track.getUploaderId(), track.getId());
             if (numberOfRows == 0) {
                 throw new DaoException("0 rows affected, expected at least 1");
             } else {
@@ -238,7 +274,69 @@ public class JdbcTrackDao implements TrackDao{
         track.setId(rs.getInt("id"));
         track.setName(rs.getString("name"));
         track.setSourceId(rs.getInt("source_id"));
-        track.setUploadedByUserId(rs.getInt("uploaded_by"));
+        track.setUploaderId(rs.getInt("uploader_id"));
         return track;
     }
+
+    private void appendJoins(StringBuilder sql, TrackSearchCriteria tsc) {
+        if (tsc.getArtistId() != null) {
+            sql.append("JOIN track_artist ta ON t.id = ta.track_id ");
+        }
+        if (tsc.getGlobalTagIds() != null && !tsc.getGlobalTagIds().isEmpty()) {
+            sql.append("JOIN track_tag_counter ttc ON t.id = ttc.track_id ");
+        }
+        if (tsc.getUserTagIds() != null && !tsc.getUserTagIds().isEmpty()) {
+            sql.append("JOIN track_tag ut ON t.id = ut.track_id ");
+        }
+    }
+
+    private List<String> buildWhereClauses(TrackSearchCriteria tsc, Integer userId, List<Object> params) {
+        List<String> whereClauses = new ArrayList<>();
+
+        if (tsc.getArtistId() != null) {
+            whereClauses.add("ta.artist_id = ?");
+            params.add(tsc.getArtistId());
+        }
+
+        if (tsc.getSourceId() != null) {
+            whereClauses.add("t.source_id = ?");
+            params.add(tsc.getSourceId());
+        }
+
+        if (tsc.getName() != null && !tsc.getName().isBlank()) {
+            whereClauses.add("LOWER(t.name) LIKE ?");
+            params.add("%" + tsc.getName().toLowerCase() + "%");
+        }
+
+        if (tsc.getGlobalTagIds() != null && !tsc.getGlobalTagIds().isEmpty()) {
+            String placeholders = String.join(",", Collections.nCopies(tsc.getGlobalTagIds().size(), "?"));
+            whereClauses.add("ttc.tag_id IN (" + placeholders + ")");
+            params.addAll(tsc.getGlobalTagIds());
+        }
+
+        if (userId != null && tsc.getUserTagIds() != null && !tsc.getUserTagIds().isEmpty()) {
+            String placeholders = String.join(",", Collections.nCopies(tsc.getUserTagIds().size(), "?"));
+            whereClauses.add("ut.user_id = ?");
+            whereClauses.add("ut.tag_id IN (" + placeholders + ")");
+            params.add(userId);
+            params.addAll(tsc.getUserTagIds());
+        }
+
+        return whereClauses;
+    }
+
+    private List<String> buildHavingClauses(TrackSearchCriteria tsc) {
+        List<String> havingClauses = new ArrayList<>();
+
+        if (tsc.getGlobalTagIds() != null && !tsc.getGlobalTagIds().isEmpty()) {
+            havingClauses.add("COUNT(DISTINCT ttc.tag_id) = " + tsc.getGlobalTagIds().size());
+        }
+
+        if (tsc.getUserTagIds() != null && !tsc.getUserTagIds().isEmpty()) {
+            havingClauses.add("COUNT(DISTINCT ut.tag_id) = " + tsc.getUserTagIds().size());
+        }
+
+        return havingClauses;
+    }
+
 }

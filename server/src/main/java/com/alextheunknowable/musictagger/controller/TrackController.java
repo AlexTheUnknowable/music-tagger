@@ -3,6 +3,7 @@ package com.alextheunknowable.musictagger.controller;
 import com.alextheunknowable.musictagger.model.Track;
 import com.alextheunknowable.musictagger.model.TrackCreationDto;
 import com.alextheunknowable.musictagger.model.TrackDto;
+import com.alextheunknowable.musictagger.model.TrackSearchCriteria;
 import com.alextheunknowable.musictagger.service.TrackService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,14 +22,8 @@ public class TrackController {
     }
 
     @GetMapping
-    public List<Track> list(@RequestParam(required = false) String name,
-                            @RequestParam(required = false) Integer artistId,
-                            @RequestParam(required = false) Integer sourceId,
-                            @RequestParam(required = false, defaultValue = "") List<Integer> globalTagIds,
-                            @RequestParam(required = false, defaultValue = "") List<Integer> userTagIds,
-                            Principal principal) {
-
-        return trackService.getTracks(name, artistId, sourceId, globalTagIds, userTagIds, principal);
+    public List<Track> list(@RequestParam(required = false) TrackSearchCriteria tsc, Principal principal) {
+        return trackService.getTracks(tsc, principal);
     }
 
     @GetMapping("/{id}")

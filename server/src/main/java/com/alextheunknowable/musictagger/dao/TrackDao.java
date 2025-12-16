@@ -1,11 +1,13 @@
 package com.alextheunknowable.musictagger.dao;
 
 import com.alextheunknowable.musictagger.model.Track;
+import com.alextheunknowable.musictagger.model.TrackSearchCriteria;
 
 import java.util.List;
 
 public interface TrackDao {
     List<Track> getTracks();
+    List<Track> getTracks(TrackSearchCriteria tsc, Integer userId);
     Track getTrackById(int trackId);
     List<Track> getTracksByName(String name);
     List<Track> getTracksByArtist(int artistId);

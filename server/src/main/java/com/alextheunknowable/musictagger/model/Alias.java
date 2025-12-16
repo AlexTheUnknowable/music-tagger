@@ -5,15 +5,15 @@ public class Alias {
     private OriginType originType;
     private int originId;
     private String alias;
-    private int uploadedByUserId;
+    private int uploaderId;
 
     public Alias() {}
-    public Alias(int id, OriginType originType, int originId, String alias, int uploadedByUserId) {
+    public Alias(int id, OriginType originType, int originId, String alias, int uploaderId) {
         this.id = id;
         this.originType = originType;
         this.originId = originId;
         this.alias = alias;
-        this.uploadedByUserId = uploadedByUserId;
+        this.uploaderId = uploaderId;
     }
 
     public int getId() {
@@ -40,10 +40,10 @@ public class Alias {
     public void setAlias(String alias) {
         this.alias = alias;
     }
-    public int getUploadedByUserId() {
-        return uploadedByUserId;
+    public int getUploaderId() {
+        return uploaderId;
     }
-    public void setUploadedByUserId(int uploadedByUserId) {
-        this.uploadedByUserId = uploadedByUserId;
+    public void setUploaderId(int uploaderId) {
+        this.uploaderId = uploaderId;
     }
 }

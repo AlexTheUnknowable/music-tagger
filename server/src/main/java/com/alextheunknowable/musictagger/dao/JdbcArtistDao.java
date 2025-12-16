@@ -69,11 +69,11 @@ public class JdbcArtistDao implements ArtistDao{
     @Override
     public Artist createArtist(Artist newArtist) {
         Artist artist = null;
-        String insertArtistSql = "INSERT INTO artist (name, uploaded_by) VALUES (?, ?) RETURNING id";
+        String insertArtistSql = "INSERT INTO artist (name, uploader_id) VALUES (?, ?) RETURNING id";
         //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!!
         //if (newArtist.getName() == null || newArtist.getName().isBlank()) throw new DaoException("Artist cannot be created with null/blank name");
         try {
-            int artistId = jdbcTemplate.queryForObject(insertArtistSql, int.class, newArtist.getName(), newArtist.getUploadedByUserId());
+            int artistId = jdbcTemplate.queryForObject(insertArtistSql, int.class, newArtist.getName(), newArtist.getUploaderId());
             artist = getArtistById(artistId);
         }
         catch (NullPointerException e) {
@@ -91,9 +91,9 @@ public class JdbcArtistDao implements ArtistDao{
     @Override
     public Artist updateArtist(Artist artist) {
         Artist updatedArtist = null;
-        String updateArtistSql = "UPDATE artist SET name = ?, uploaded_by = ? WHERE id = ?;";
+        String updateArtistSql = "UPDATE artist SET name = ?, uploader_id = ? WHERE id = ?;";
         try {
-            int numberOfRows = jdbcTemplate.update(updateArtistSql, artist.getName(), artist.getUploadedByUserId(), artist.getId());
+            int numberOfRows = jdbcTemplate.update(updateArtistSql, artist.getName(), artist.getUploaderId(), artist.getId());
             if (numberOfRows == 0) {
                 throw new DaoException("0 rows affected, expected at least 1");
             } else {
@@ -125,7 +125,7 @@ public class JdbcArtistDao implements ArtistDao{
         Artist artist = new Artist();
         artist.setId(rs.getInt("id"));
         artist.setName(rs.getString("name"));
-        artist.setUploadedByUserId(rs.getInt("uploaded_by"));
+        artist.setUploaderId(rs.getInt("uploader_id"));
         return artist;
     }
 }

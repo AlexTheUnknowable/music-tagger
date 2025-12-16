@@ -16,8 +16,7 @@ public class LinkServiceImpl implements LinkService{
 
     @Override
     public List<Link> getLinks() {
-        List<Link> links = linkDao.getLinks();
-        return links;
+        return linkDao.getLinks();
     }
 
     @Override
