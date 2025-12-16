@@ -7,7 +7,7 @@ import java.util.List;
 public interface TagDao {
     List<Tag> getTags();
     Tag getTagById(int tagId);
-    Tag getTagByName(String name);
+    List<Tag> getTagsByName(String name);
     Tag createTag(Tag newTag);
     Tag updateTag(Tag Tag);
     int deleteTagById(int tagId);

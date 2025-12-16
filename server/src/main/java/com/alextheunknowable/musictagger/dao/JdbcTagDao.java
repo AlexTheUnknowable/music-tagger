@@ -52,26 +52,27 @@ public class JdbcTagDao implements TagDao{
     }
 
     @Override
-    public Tag getTagByName(String name) {
+    public List<Tag> getTagsByName(String name) {
         if (name == null) name = "";
-        Tag tag = null;
-        String sql = "SELECT * FROM tag WHERE name = ?";
+        List<Tag> tags = new ArrayList<>();
+        String sql = "SELECT * FROM tag WHERE LOWER(name) LIKE LOWER(?)";
         try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, name);
-            if (results.next()) tag = mapRowToTag(results);
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, "%" + name + "%");
+            while (results.next()) {
+                Tag tag = mapRowToTag(results);
+                tags.add(tag);
+            }
         }
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
-        return tag;
+        return tags;
     }
 
     @Override
     public Tag createTag(Tag newTag) {
         Tag tag = null;
         String insertTagSql = "INSERT INTO tag (name) VALUES (?) RETURNING id";
-        //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!!
-        //if (newTag.getName() == null || newTag.getName().isBlank()) throw new DaoException("Tag cannot be created with null/blank name");
         try {
             int tagId = jdbcTemplate.queryForObject(insertTagSql, int.class, newTag.getName());
             tag = getTagById(tagId);

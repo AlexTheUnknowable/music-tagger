@@ -52,26 +52,26 @@ public class JdbcSourceDao implements SourceDao{
     }
 
     @Override
-    public Source getSourceByName(String name) {
+    public List<Source> getSourcesByName(String name) {
         if (name == null) name = "";
-        Source source = null;
-        String sql = "SELECT * FROM source WHERE name = ?";
+        List<Source> sources = new ArrayList<>();
+        String sql = "SELECT * FROM source WHERE LOWER(name) LIKE LOWER(?)";
         try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, name);
-            if (results.next()) source = mapRowToSource(results);
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, "%" + name + "%");
+            while (results.next()) {
+                sources.add(mapRowToSource(results));
+            }
         }
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
-        return source;
+        return sources;
     }
 
     @Override
     public Source createSource(Source newSource) {
         Source source = null;
         String insertSourceSql = "INSERT INTO source (name, uploader_id) VALUES (?, ?) RETURNING id";
-        //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!!
-        //if (newSource.getName() == null || newSource.getName().isBlank()) throw new DaoException("Source cannot be created with null/blank name");
         try {
             int sourceId = jdbcTemplate.queryForObject(insertSourceSql, int.class, newSource.getName(), newSource.getUploaderId());
             source = getSourceById(sourceId);

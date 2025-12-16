@@ -30,8 +30,8 @@ public class SourceController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    public Source add(@Valid @RequestBody Source source) {
-        return sourceService.createSource(source);
+    public Source add(@Valid @RequestBody Source source, Principal principal) {
+        return sourceService.createSource(source, principal);
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -42,7 +42,7 @@ public class SourceController {
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        sourceService.deleteSource(id);
+    public void delete(@PathVariable int id, Principal principal) {
+        sourceService.deleteSource(id, principal);
     }
 }

@@ -65,14 +65,8 @@ public class TrackServiceImpl implements TrackService{
         // link(s)
         List<String> linkUrls = dto.getLinkUrls();
         List<Integer> createdLinkIds = new ArrayList<>();
-        //TODO: put this logic in linkService?
         for (String url : linkUrls) {
-            Link link = new Link();
-            link.setOriginType(OriginType.TRACK);
-            link.setOriginId(createdTrack.getId());
-            link.setUrl(url);
-            link.setUploaderId(userId);
-            Link createdLink = linkService.createLink(link);
+            Link createdLink = linkService.createLink(OriginType.TRACK, createdTrack.getId(), url, userId);
             createdLinkIds.add(createdLink.getId());
         }
 
@@ -82,7 +76,6 @@ public class TrackServiceImpl implements TrackService{
             artistIds.addAll(dto.getExistingArtistIds());
         }
         if (dto.getNewArtistNames() != null && !dto.getNewArtistNames().isEmpty()) {
-            // create new artist(s) and add their ids to list
             for (String artistName : dto.getNewArtistNames()) {
                 Artist createdArtist = artistService.createArtist(artistName, userId);
                 artistIds.add(createdArtist.getId());

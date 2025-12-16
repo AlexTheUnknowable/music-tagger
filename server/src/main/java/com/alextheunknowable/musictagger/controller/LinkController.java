@@ -30,8 +30,8 @@ public class LinkController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    public Link add(@Valid @RequestBody Link link) {
-        return linkService.createLink(link);
+    public Link add(@Valid @RequestBody Link link, Principal principal) {
+        return linkService.createLink(link, principal);
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -42,7 +42,7 @@ public class LinkController {
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        linkService.deleteLink(id);
+    public void delete(@PathVariable int id, Principal principal) {
+        linkService.deleteLink(id, principal);
     }
 }

@@ -1,6 +1,7 @@
 package com.alextheunknowable.musictagger.service;
 
 import com.alextheunknowable.musictagger.dao.TagDao;
+import com.alextheunknowable.musictagger.exception.NotFoundException;
 import com.alextheunknowable.musictagger.model.Tag;
 import org.springframework.stereotype.Service;
 
@@ -10,23 +11,16 @@ import java.util.List;
 @Service
 public class TagServiceImpl implements TagService{
     private final TagDao tagDao;
-    public TagServiceImpl(TagDao tagDao) {
+    private final AuthService authService;
+    public TagServiceImpl(TagDao tagDao, AuthService authService) {
         this.tagDao = tagDao;
+        this.authService = authService;
     }
 
     @Override
     public List<Tag> getTags(String name) {
-
-        List<Tag> tags = tagDao.getTags();
-
-        // name filter
-        if (name != null && !name.isBlank()) {
-            tags = tags.stream()
-                    .filter(tag -> tag.getName().toLowerCase().contains(name.toLowerCase()))
-                    .toList();
-        }
-
-        return tags;
+        if (name != null && !name.isBlank()) return tagDao.getTagsByName(name);
+        return tagDao.getTags();
     }
 
     @Override
@@ -35,22 +29,38 @@ public class TagServiceImpl implements TagService{
     }
 
     @Override
-    public Tag createTag(Tag tag) {
+    public Tag createTag(Tag tag, Principal principal) {
+        if (tag.getName() == null || tag.getName().isBlank()) {
+            throw new IllegalArgumentException("Tag must have a name");
+        }
+        tag.setUploaderId(authService.getUserIdFromPrincipal(principal));
         return tagDao.createTag(tag);
-        // requires name and 1 link
     }
 
     @Override
-    public Tag updateTag(int id, Tag tag, Principal principal) {
-        tag.setId(id);
-        return tagDao.updateTag(tag);
-        //requires user to be admin or uploader
+    public Tag updateTag(int id, Tag updatedTag, Principal principal) {
+        Tag existingTag = tagDao.getTagById(id);
+
+        if (existingTag == null) throw new NotFoundException("Tag not found.");
+        authService.assertUserCanModify(principal, existingTag.getUploaderId(),
+                "User does not have permissions to modify this tag.");
+
+        updatedTag.setId(id);
+        updatedTag.setUploaderId(existingTag.getUploaderId());
+        return tagDao.updateTag(updatedTag);
     }
 
     @Override
-    public void deleteTag(int id) {
+    public void deleteTag(int id, Principal principal) {
+        Tag tag = tagDao.getTagById(id);
+
+        if (tag == null) throw new NotFoundException("Tag with id " + id + " not found.");
+        authService.assertUserCanModify(principal, tag.getUploaderId(),
+                "User does not have permissions to delete this tag.");
+
         int numberOfRowsDeleted = tagDao.deleteTagById(id);
-        //requires user to be admin or uploader
+
+        if (numberOfRowsDeleted == 0) throw new NotFoundException("Tag with id " + id + " not found.");
     }
 
 }

@@ -19,17 +19,8 @@ public class ArtistServiceImpl implements ArtistService{
 
     @Override
     public List<Artist> getArtists(String name) {
-
-        List<Artist> artists = artistDao.getArtists();
-
-        // name filter
-        if (name != null && !name.isBlank()) {
-            artists = artists.stream()
-                    .filter(artist -> artist.getName().toLowerCase().contains(name.toLowerCase()))
-                    .toList();
-        }
-
-        return artists;
+        if (name != null && !name.isBlank()) return artistDao.getArtistsByName(name);
+        return artistDao.getArtists();
     }
 
     @Override

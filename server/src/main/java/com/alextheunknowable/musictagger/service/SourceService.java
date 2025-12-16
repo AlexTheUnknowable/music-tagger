@@ -8,7 +8,7 @@ import java.util.List;
 public interface SourceService {
     List<Source> getSources(String name);
     Source getSourceById(int id);
-    Source createSource(Source source);
+    Source createSource(Source source, Principal principal);
     Source updateSource(int id, Source source, Principal principal);
-    void deleteSource(int id);
+    void deleteSource(int id, Principal principal);
 }

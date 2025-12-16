@@ -30,8 +30,8 @@ public class TagController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    public Tag add(@Valid @RequestBody Tag tag) {
-        return tagService.createTag(tag);
+    public Tag add(@Valid @RequestBody Tag tag, Principal principal) {
+        return tagService.createTag(tag, principal);
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -42,7 +42,7 @@ public class TagController {
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        tagService.deleteTag(id);
+    public void delete(@PathVariable int id, Principal principal) {
+        tagService.deleteTag(id, principal);
     }
 }

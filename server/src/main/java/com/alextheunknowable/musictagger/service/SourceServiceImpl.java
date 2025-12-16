@@ -1,6 +1,7 @@
 package com.alextheunknowable.musictagger.service;
 
 import com.alextheunknowable.musictagger.dao.SourceDao;
+import com.alextheunknowable.musictagger.exception.NotFoundException;
 import com.alextheunknowable.musictagger.model.Source;
 import org.springframework.stereotype.Service;
 
@@ -10,23 +11,16 @@ import java.util.List;
 @Service
 public class SourceServiceImpl implements SourceService{
     private final SourceDao sourceDao;
-    public SourceServiceImpl(SourceDao sourceDao) {
+    private final AuthService authService;
+    public SourceServiceImpl(SourceDao sourceDao, AuthService authService) {
         this.sourceDao = sourceDao;
+        this.authService = authService;
     }
 
     @Override
     public List<Source> getSources(String name) {
-
-        List<Source> sources = sourceDao.getSources();
-
-        // name filter
-        if (name != null && !name.isBlank()) {
-            sources = sources.stream()
-                    .filter(source -> source.getName().toLowerCase().contains(name.toLowerCase()))
-                    .toList();
-        }
-
-        return sources;
+        if (name != null && !name.isBlank()) return sourceDao.getSourcesByName(name);
+        return sourceDao.getSources();
     }
 
     @Override
@@ -35,22 +29,38 @@ public class SourceServiceImpl implements SourceService{
     }
 
     @Override
-    public Source createSource(Source source) {
+    public Source createSource(Source source, Principal principal) {
+        if (source.getName() == null || source.getName().isBlank()) {
+            throw new IllegalArgumentException("Source must have a name");
+        }
+        source.setUploaderId(authService.getUserIdFromPrincipal(principal));
         return sourceDao.createSource(source);
-        // requires name and 1 link
     }
 
     @Override
-    public Source updateSource(int id, Source source, Principal principal) {
-        source.setId(id);
-        return sourceDao.updateSource(source);
-        //requires user to be admin or uploader
+    public Source updateSource(int id, Source updatedSource, Principal principal) {
+        Source existingSource = sourceDao.getSourceById(id);
+
+        if (existingSource == null) throw new NotFoundException("Source not found.");
+        authService.assertUserCanModify(principal, existingSource.getUploaderId(),
+                "User does not have permissions to modify this source.");
+
+        updatedSource.setId(id);
+        updatedSource.setUploaderId(existingSource.getUploaderId());
+        return sourceDao.updateSource(updatedSource);
     }
 
     @Override
-    public void deleteSource(int id) {
+    public void deleteSource(int id, Principal principal) {
+        Source source = sourceDao.getSourceById(id);
+
+        if (source == null) throw new NotFoundException("Source with id " + id + " not found.");
+        authService.assertUserCanModify(principal, source.getUploaderId(),
+                "User does not have permissions to delete this source.");
+
         int numberOfRowsDeleted = sourceDao.deleteSourceById(id);
-        //requires user to be admin or uploader
+
+        if (numberOfRowsDeleted == 0) throw new NotFoundException("Source with id " + id + " not found.");
     }
 
 }

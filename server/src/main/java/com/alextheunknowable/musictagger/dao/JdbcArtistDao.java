@@ -52,26 +52,26 @@ public class JdbcArtistDao implements ArtistDao{
     }
 
     @Override
-    public Artist getArtistByName(String name) {
+    public List<Artist> getArtistsByName(String name) {
         if (name == null) name = "";
-        Artist artist = null;
-        String sql = "SELECT * FROM artist WHERE name = ?";
+        List<Artist> artists = new ArrayList<>();
+        String sql = "SELECT * FROM artist WHERE LOWER(name) LIKE LOWER(?)";
         try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, name);
-            if (results.next()) artist = mapRowToArtist(results);
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, "%" + name + "%");
+            while (results.next()) {
+                artists.add(mapRowToArtist(results));
+            }
         }
         catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
-        return artist;
+        return artists;
     }
 
     @Override
     public Artist createArtist(Artist newArtist) {
         Artist artist = null;
         String insertArtistSql = "INSERT INTO artist (name, uploader_id) VALUES (?, ?) RETURNING id";
-        //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!!
-        //if (newArtist.getName() == null || newArtist.getName().isBlank()) throw new DaoException("Artist cannot be created with null/blank name");
         try {
             int artistId = jdbcTemplate.queryForObject(insertArtistSql, int.class, newArtist.getName(), newArtist.getUploaderId());
             artist = getArtistById(artistId);

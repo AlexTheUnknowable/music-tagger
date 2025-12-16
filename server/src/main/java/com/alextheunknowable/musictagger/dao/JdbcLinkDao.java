@@ -56,8 +56,6 @@ public class JdbcLinkDao implements LinkDao{
     public Link createLink(Link newLink) {
         Link link = null;
         String insertLinkSql = "INSERT INTO link (origin_type, origin_id, url, uploader_id) VALUES (?, ?, ?, ?) RETURNING id";
-        //HEY!! THIS SHOULD BE IN THE SERVICE!!!!!!!!
-        //if (newLink.getName() == null || newLink.getName().isBlank()) throw new DaoException("Link cannot be created with null/blank name");
         try {
             int linkId = jdbcTemplate.queryForObject(insertLinkSql, int.class, newLink.getOriginType(), newLink.getOriginId(), newLink.getUrl(), newLink.getUploaderId());
             link = getLinkById(linkId);
