@@ -39,6 +39,7 @@ public class ArtistServiceImpl implements ArtistService{
 
     @Override
     public Artist createArtist(String name, int userId) {
+        // for internal use only, not from requests
         //note: make this transactional if i ever add side effects
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Artist must have a name");

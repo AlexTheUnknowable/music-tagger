@@ -43,6 +43,7 @@ public class JdbcTrackDao implements TrackDao{
 
     @Override
     public List<Track> getTracks(TrackSearchCriteria tsc, Integer userId) {
+        //TODO: return Track DTOs with id, name, source id, uploader id, artist ids, link ids, tag ids, aliases
         List<Object> params = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT DISTINCT t.* FROM track t ");
 

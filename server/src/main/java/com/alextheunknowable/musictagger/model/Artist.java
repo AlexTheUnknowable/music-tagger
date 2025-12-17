@@ -1,7 +1,10 @@
 package com.alextheunknowable.musictagger.model;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class Artist {
     private int id;
+    @NotBlank(message = "Artist name cannot be blank")
     private String name;
     private int uploaderId;
 

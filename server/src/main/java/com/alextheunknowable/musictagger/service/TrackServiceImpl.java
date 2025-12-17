@@ -33,6 +33,7 @@ public class TrackServiceImpl implements TrackService{
         if (tsc.getUserTagIds() != null && !tsc.getUserTagIds().isEmpty())
             userId = authService.getUserIdFromPrincipal(principal);
         return trackDao.getTracks(tsc, userId);
+        //TODO: get track DTOS (include artist IDs, link IDs, tag IDs, aliases, image url)
     }
 
     @Override

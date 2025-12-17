@@ -1,5 +1,6 @@
 package com.alextheunknowable.musictagger.model.auth;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 /**
@@ -11,13 +12,13 @@ import jakarta.validation.constraints.NotEmpty;
  */
 public class RegisterUserDto {
 
-    @NotEmpty
+    @NotBlank(message = "Username is required")
     private String username;
-    @NotEmpty
+    @NotBlank(message = "Password is required")
     private String password;
-    @NotEmpty
+    @NotBlank(message = "Password confirmation is required")
     private String confirmPassword;
-    @NotEmpty(message = "Please select a role for this user.")
+    @NotBlank(message = "Please select a role for this user.")
     private String role;
 
     public RegisterUserDto(String username, String password, String confirmPassword, String role) {

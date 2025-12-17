@@ -2,9 +2,11 @@ package com.alextheunknowable.musictagger.service;
 
 import com.alextheunknowable.musictagger.dao.UserDao;
 import com.alextheunknowable.musictagger.model.User;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class UserServiceImpl implements UserService{
     private final UserDao userDao;
     public UserServiceImpl(UserDao userDao) {

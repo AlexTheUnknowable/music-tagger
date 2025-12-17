@@ -1,14 +1,19 @@
 package com.alextheunknowable.musictagger.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class TrackCreationDto{
+    @NotBlank(message = "Track name is required")
     private String name;
     private Integer sourceId;
     private List<Integer> existingArtistIds = new ArrayList<>();
     private List<String> newArtistNames = new ArrayList<>();
-    private List<String> linkUrls = new ArrayList<>();
+    @NotEmpty(message = "At least one link is required")
+    private List<@NotBlank String> linkUrls = new ArrayList<>();
     private List<Integer> tagIds = new ArrayList<>();
     private List<String> aliases = new ArrayList<>();
 

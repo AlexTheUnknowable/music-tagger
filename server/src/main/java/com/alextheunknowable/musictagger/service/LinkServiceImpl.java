@@ -37,6 +37,7 @@ public class LinkServiceImpl implements LinkService{
 
     @Override
     public Link createLink(OriginType originType, int originId, String url, int userId) {
+        // for internal use only, not from requests
         //note: make this transactional if i ever add side effects
         if (originType == null) {
             throw new IllegalArgumentException("An unexpected error occurred: OriginType is null");
