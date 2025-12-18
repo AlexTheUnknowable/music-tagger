@@ -8,9 +8,9 @@ public class TrackDto{
     private String name;
     private Integer sourceId;
     private int uploaderId;
-    private List<Integer> artistIds = new ArrayList<>();
-    private List<Integer> linkIds = new ArrayList<>();
-    private List<Integer> tagIds = new ArrayList<>();
+    private List<Artist> artists = new ArrayList<>();
+    private List<Link> links = new ArrayList<>();
+    private List<Tag> tags = new ArrayList<>();
     private List<String> aliases = new ArrayList<>();
     private String imageUrl;
 
@@ -23,15 +23,15 @@ public class TrackDto{
         this.uploaderId = t.getUploaderId();
     }
 
-    public TrackDto(int id, Integer sourceId, String name, int uploaderId, List<Integer> artistIds,
-                    List<Integer> linkIds, List<Integer> tagIds, List<String> aliases, String imageUrl) {
+    public TrackDto(int id, Integer sourceId, String name, int uploaderId, List<Artist> artists,
+                    List<Link> links, List<Tag> tags, List<String> aliases, String imageUrl) {
         this.id = id;
         this.sourceId = sourceId;
         this.name = name;
         this.uploaderId = uploaderId;
-        this.artistIds = artistIds != null ? new ArrayList<>(artistIds) : new ArrayList<>();
-        this.linkIds = linkIds != null ? new ArrayList<>(linkIds) : new ArrayList<>();
-        this.tagIds = tagIds != null ? new ArrayList<>(tagIds) : new ArrayList<>();
+        this.artists = artists != null ? new ArrayList<>(artists) : new ArrayList<>();
+        this.links = links != null ? new ArrayList<>(links) : new ArrayList<>();
+        this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
         this.aliases = aliases != null ? new ArrayList<>(aliases) : new ArrayList<>();
         this.imageUrl = imageUrl;
     }
@@ -60,23 +60,23 @@ public class TrackDto{
     public void setUploaderId(int uploaderId) {
         this.uploaderId = uploaderId;
     }
-    public List<Integer> getArtistIds() {
-        return artistIds;
+    public List<Artist> getArtists() {
+        return artists;
     }
-    public void setArtistIds(List<Integer> artistIds) {
-        this.artistIds = artistIds != null ? new ArrayList<>(artistIds) : new ArrayList<>();
+    public void setArtists(List<Artist> artists) {
+        this.artists = artists != null ? new ArrayList<>(artists) : new ArrayList<>();
     }
-    public List<Integer> getLinkIds() {
-        return linkIds;
+    public List<Link> getLinks() {
+        return links;
     }
-    public void setLinkIds(List<Integer> linkIds) {
-        this.linkIds = linkIds != null ? new ArrayList<>(linkIds) : new ArrayList<>();
+    public void setLinks(List<Link> links) {
+        this.links = links != null ? new ArrayList<>(links) : new ArrayList<>();
     }
-    public List<Integer> getTagIds() {
-        return tagIds;
+    public List<Tag> getTags() {
+        return tags;
     }
-    public void setTagIds(List<Integer> tagIds) {
-        this.tagIds = tagIds != null ? new ArrayList<>(tagIds) : new ArrayList<>();
+    public void setTags(List<Tag> tags) {
+        this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
     }
     public List<String> getAliases() {
         return aliases;
