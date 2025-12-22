@@ -2,16 +2,14 @@ package com.alextheunknowable.musictagger.model;
 
 public class Alias {
     private int id;
-    private OriginType originType;
-    private int originId;
+    private int trackId;
     private String alias;
     private int uploaderId;
 
     public Alias() {}
-    public Alias(int id, OriginType originType, int originId, String alias, int uploaderId) {
+    public Alias(int id, int trackId, String alias, int uploaderId) {
         this.id = id;
-        this.originType = originType;
-        this.originId = originId;
+        this.trackId = trackId;
         this.alias = alias;
         this.uploaderId = uploaderId;
     }
@@ -22,17 +20,11 @@ public class Alias {
     public void setId(int id) {
         this.id = id;
     }
-    public OriginType getOriginType() {
-        return originType;
+    public int getTrackId() {
+        return trackId;
     }
-    public void setOriginType(OriginType originType) {
-        this.originType = originType;
-    }
-    public int getOriginId() {
-        return originId;
-    }
-    public void setOriginId(int originId) {
-        this.originId = originId;
+    public void setTrackId(int trackId) {
+        this.trackId = trackId;
     }
     public String getAlias() {
         return alias;

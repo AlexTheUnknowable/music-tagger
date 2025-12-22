@@ -9,7 +9,7 @@ import java.security.Principal;
 import java.util.List;
 
 public interface TrackService {
-    List<Track> getTracks(TrackSearchCriteria tsc, Principal principal);
+    List<TrackDto> getTracks(TrackSearchCriteria tsc, Principal principal);
     Track getTrackById(int id);
     TrackDto createTrack(TrackCreationDto trackCDto, Principal principal);
     Track updateTrack(int id, Track track, Principal principal);

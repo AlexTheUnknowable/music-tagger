@@ -23,7 +23,7 @@ public class JdbcTrackDao implements TrackDao{
     }
 
     @Override
-    public List<Track> getTracks() {
+    public List<Track> getAllTracks() {
         List<Track> tracks = new ArrayList<>();
         String sql = "SELECT * FROM track ORDER BY id;";
         try {
@@ -42,8 +42,7 @@ public class JdbcTrackDao implements TrackDao{
     }
 
     @Override
-    public List<Track> getTracks(TrackSearchCriteria tsc, Integer userId) {
-        //TODO: return Track DTOs with id, name, source id, uploader id, artist ids, link ids, tag ids, aliases
+    public List<Track> getTracksByCriteria(TrackSearchCriteria tsc, Integer userId) {
         List<Object> params = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT DISTINCT t.* FROM track t ");
 

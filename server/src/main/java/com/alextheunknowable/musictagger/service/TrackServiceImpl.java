@@ -3,6 +3,7 @@ package com.alextheunknowable.musictagger.service;
 import com.alextheunknowable.musictagger.dao.TrackArtistDao;
 import com.alextheunknowable.musictagger.dao.TrackDao;
 import com.alextheunknowable.musictagger.exception.NotFoundException;
+import com.alextheunknowable.musictagger.exception.UnauthorizedException;
 import com.alextheunknowable.musictagger.model.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,30 +11,57 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TrackServiceImpl implements TrackService{
     private final TrackDao trackDao;
     private final TrackArtistDao trackArtistDao;
     private final AuthService authService;
-    private final LinkService linkService;
     private final ArtistService artistService;
-    public TrackServiceImpl(TrackDao trackDao, AuthService authService, LinkService linkService,
-                            TrackArtistDao trackArtistDao, ArtistService artistService) {
+    private final LinkService linkService;
+    private final TagService tagService;
+    private final AliasService aliasService;
+
+    public TrackServiceImpl(TrackDao trackDao, AuthService authService, LinkService linkService, TagService tagService,
+                            TrackArtistDao trackArtistDao, ArtistService artistService, AliasService aliasService) {
         this.trackDao = trackDao;
         this.authService = authService;
         this.linkService = linkService;
+        this.tagService = tagService;
         this.trackArtistDao = trackArtistDao;
         this.artistService = artistService;
+        this.aliasService = aliasService;
     }
 
     @Override
-    public List<Track> getTracks(TrackSearchCriteria tsc, Principal principal) {
+    public List<TrackDto> getTracks(TrackSearchCriteria tsc, Principal principal) {
         Integer userId = null;
-        if (tsc.getUserTagIds() != null && !tsc.getUserTagIds().isEmpty())
+        if (tsc.getUserTagIds() != null && !tsc.getUserTagIds().isEmpty()) {
+            if (principal == null) throw new UnauthorizedException("User tag filtering requires authentication");
             userId = authService.getUserIdFromPrincipal(principal);
-        return trackDao.getTracks(tsc, userId);
-        //TODO: get track DTOS (include artist IDs, link IDs, tag IDs, aliases, image url)
+        }
+
+        List<Track> tracks = trackDao.getTracksByCriteria(tsc, userId);
+        if (tracks.isEmpty()) return List.of();
+        //TODO: make a new TrackCoreDto including source info and images OH THATS WHERE IMAGE URL GOES IN THE SOURCE TABLE
+
+        List<Integer> trackIds = tracks.stream().map(Track::getId).toList();
+
+        Map<Integer, List<Artist>> artists = artistService.getArtistsByTrackIds(trackIds);
+        Map<Integer, List<Link>> links = linkService.getLinksByTrackIds(trackIds);
+        Map<Integer, List<Tag>> tags = tagService.getTagsByTrackIds(trackIds);
+        Map<Integer, List<Alias>> aliases = aliasService.getAliasesByTrackIds(trackIds);
+
+        return tracks.stream()
+                .map(t -> TrackDto.from(
+                        t,
+                        artists.get(t.getId()),
+                        links.get(t.getId()),
+                        tags.get(t.getId()),
+                        aliases.get(t.getId())
+                ))
+                .toList();
     }
 
     @Override
@@ -121,8 +149,8 @@ public class TrackServiceImpl implements TrackService{
         createdTrackDto.setName(track.getName());
         createdTrackDto.setSourceId(track.getSourceId());
         createdTrackDto.setUploaderId(track.getUploaderId());
-        createdTrackDto.setLinkIds(linkIds);
-        createdTrackDto.setArtistIds(artistIds);
+        //createdTrackDto.setLinkIds(linkIds);
+        //createdTrackDto.setArtistIds(artistIds);
         //maybe add these in the future:
         //createdTrackDto.setTagIds();
         //createdTrackDto.setAliases();

@@ -7,11 +7,12 @@ public class TrackDto{
     private int id;
     private String name;
     private Integer sourceId;
+    private String sourceName;
     private int uploaderId;
     private List<Artist> artists = new ArrayList<>();
     private List<Link> links = new ArrayList<>();
     private List<Tag> tags = new ArrayList<>();
-    private List<String> aliases = new ArrayList<>();
+    private List<Alias> aliases = new ArrayList<>();
     private String imageUrl;
 
     public TrackDto() {}
@@ -23,10 +24,11 @@ public class TrackDto{
         this.uploaderId = t.getUploaderId();
     }
 
-    public TrackDto(int id, Integer sourceId, String name, int uploaderId, List<Artist> artists,
-                    List<Link> links, List<Tag> tags, List<String> aliases, String imageUrl) {
+    public TrackDto(int id, String name, Integer sourceId, String sourceName, int uploaderId,
+                    List<Artist> artists, List<Link> links, List<Tag> tags, List<Alias> aliases, String imageUrl) {
         this.id = id;
         this.sourceId = sourceId;
+        this.sourceName = sourceName;
         this.name = name;
         this.uploaderId = uploaderId;
         this.artists = artists != null ? new ArrayList<>(artists) : new ArrayList<>();
@@ -34,6 +36,27 @@ public class TrackDto{
         this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
         this.aliases = aliases != null ? new ArrayList<>(aliases) : new ArrayList<>();
         this.imageUrl = imageUrl;
+    }
+
+    public static TrackDto from(
+            Track track,
+            List<Artist> artists,
+            List<Link> links,
+            List<Tag> tags,
+            List<Alias> aliases) {
+        TrackDto dto = new TrackDto();
+
+        dto.setId(track.getId());
+        dto.setName(track.getName());
+        dto.setUploaderId(track.getUploaderId());
+        dto.setSourceId(track.getSourceId());
+
+        dto.setArtists(artists != null ? artists : List.of());
+        dto.setLinks(links != null ? links : List.of());
+        dto.setTags(tags != null ? tags : List.of());
+        dto.setAliases(aliases != null ? aliases : List.of());
+
+        return dto;
     }
 
     public int getId() {
@@ -47,6 +70,12 @@ public class TrackDto{
     }
     public void setSourceId(Integer sourceId) {
         this.sourceId = sourceId;
+    }
+    public String getSourceName() {
+        return sourceName;
+    }
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
     }
     public String getName() {
         return name;
@@ -78,10 +107,10 @@ public class TrackDto{
     public void setTags(List<Tag> tags) {
         this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
     }
-    public List<String> getAliases() {
+    public List<Alias> getAliases() {
         return aliases;
     }
-    public void setAliases(List<String> aliases) {
+    public void setAliases(List<Alias> aliases) {
         this.aliases = aliases != null ? new ArrayList<>(aliases) : new ArrayList<>();
     }
     public String getImageUrl() {
