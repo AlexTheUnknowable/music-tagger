@@ -9,8 +9,7 @@ import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class JdbcLinkDao implements LinkDao{
     private final JdbcTemplate jdbcTemplate;
@@ -50,6 +49,35 @@ public class JdbcLinkDao implements LinkDao{
             throw new DaoException("Unable to connect to server or database", e);
         }
         return link;
+    }
+
+    @Override
+    public Map<Integer, List<Link>> getLinksByTrackIds(List<Integer> trackIds) {
+        Map<Integer, List<Link>> linksByTrackId = new HashMap<>();
+        if (trackIds == null || trackIds.isEmpty()) return linksByTrackId;
+
+        String placeholders = String.join(",", Collections.nCopies(trackIds.size(), "?"));
+        String sql = """
+        SELECT link.*
+        FROM link
+        WHERE origin_type = 'TRACK' AND origin_id IN (%s)
+        ORDER BY origin_id, id
+        """.formatted(placeholders);
+
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, trackIds.toArray());
+            while (results.next()) {
+                Link link = mapRowToLink(results);
+                int trackId = results.getInt("origin_id");
+                linksByTrackId
+                        .computeIfAbsent(trackId, k -> new ArrayList<>())
+                        .add(link);
+            }
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+
+        return linksByTrackId;
     }
 
     @Override

@@ -39,7 +39,7 @@ public class TrackDto{
     }
 
     public static TrackDto from(
-            Track track,
+            TrackCoreDto track,
             List<Artist> artists,
             List<Link> links,
             List<Tag> tags,
@@ -50,6 +50,8 @@ public class TrackDto{
         dto.setName(track.getName());
         dto.setUploaderId(track.getUploaderId());
         dto.setSourceId(track.getSourceId());
+        dto.setSourceName(track.getSourceName());
+        dto.setImageUrl(track.getImageUrl());
 
         dto.setArtists(artists != null ? artists : List.of());
         dto.setLinks(links != null ? links : List.of());

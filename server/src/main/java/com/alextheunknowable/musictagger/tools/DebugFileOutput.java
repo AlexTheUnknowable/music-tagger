@@ -9,7 +9,8 @@ public class DebugFileOutput {
     public static void main(String[] args) {
         // List of paths: can be individual files or folders
         List<String> pathsToInclude = List.of(
-                "src/main/java/com/alextheunknowable/musictagger/controller"
+                "src/main/java/com/alextheunknowable/musictagger/model/Track",
+                "src/main/java/com/alextheunknowable/musictagger/model/TrackDto"
         );
 
         Path outputFile = Paths.get("selected_code.txt");

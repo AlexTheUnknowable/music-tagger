@@ -8,8 +8,7 @@ import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class JdbcArtistDao implements ArtistDao{
     private final JdbcTemplate jdbcTemplate;
@@ -66,6 +65,36 @@ public class JdbcArtistDao implements ArtistDao{
             throw new DaoException("Unable to connect to server or database", e);
         }
         return artists;
+    }
+
+    @Override
+    public Map<Integer, List<Artist>> getArtistsByTrackIds(List<Integer> trackIds) {
+        Map<Integer, List<Artist>> artistsByTrackId = new HashMap<>();
+        if (trackIds == null || trackIds.isEmpty()) return artistsByTrackId;
+
+        String placeholders = String.join(",", Collections.nCopies(trackIds.size(), "?"));
+        String sql = """
+        SELECT ar.*, ta.track_id
+        FROM artist AS ar
+        JOIN track_artist AS ta ON ta.artist_id = ar.artist.id
+        WHERE ta.track_id IN (%s)
+        ORDER BY ta.track_id, ar.id
+        """.formatted(placeholders);
+
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, trackIds.toArray());
+            while (results.next()) {
+                Artist artist = mapRowToArtist(results);
+                int trackId = results.getInt("track_id");
+                artistsByTrackId
+                        .computeIfAbsent(trackId, k -> new ArrayList<>())
+                        .add(artist);
+            }
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+
+        return artistsByTrackId;
     }
 
     @Override

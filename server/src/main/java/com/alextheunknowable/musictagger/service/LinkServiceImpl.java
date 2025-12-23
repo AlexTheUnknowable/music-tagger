@@ -2,13 +2,13 @@ package com.alextheunknowable.musictagger.service;
 
 import com.alextheunknowable.musictagger.dao.LinkDao;
 import com.alextheunknowable.musictagger.exception.NotFoundException;
-import com.alextheunknowable.musictagger.model.Artist;
 import com.alextheunknowable.musictagger.model.Link;
 import com.alextheunknowable.musictagger.model.OriginType;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class LinkServiceImpl implements LinkService{
@@ -27,6 +27,11 @@ public class LinkServiceImpl implements LinkService{
     @Override
     public Link getLinkById(int id) {
         return linkDao.getLinkById(id);
+    }
+
+    @Override
+    public Map<Integer, List<Link>> getLinksByTrackIds(List<Integer> trackIds) {
+        return linkDao.getLinksByTrackIds(trackIds);
     }
 
     @Override

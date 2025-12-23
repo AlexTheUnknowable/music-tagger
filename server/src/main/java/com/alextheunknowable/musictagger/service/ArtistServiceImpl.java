@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ArtistServiceImpl implements ArtistService{
@@ -26,6 +27,11 @@ public class ArtistServiceImpl implements ArtistService{
     @Override
     public Artist getArtistById(int id) {
         return artistDao.getArtistById(id);
+    }
+
+    @Override
+    public Map<Integer, List<Artist>> getArtistsByTrackIds(List<Integer> trackIds) {
+        return artistDao.getArtistsByTrackIds(trackIds);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.alextheunknowable.musictagger.dao;
 
 import com.alextheunknowable.musictagger.exception.DaoException;
 import com.alextheunknowable.musictagger.model.Track;
+import com.alextheunknowable.musictagger.model.TrackCoreDto;
 import com.alextheunknowable.musictagger.model.TrackSearchCriteria;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,9 +43,19 @@ public class JdbcTrackDao implements TrackDao{
     }
 
     @Override
-    public List<Track> getTracksByCriteria(TrackSearchCriteria tsc, Integer userId) {
+    public List<TrackCoreDto> getTracksByCriteria(TrackSearchCriteria tsc, Integer userId) {
         List<Object> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT DISTINCT t.* FROM track t ");
+        StringBuilder sql = new StringBuilder("""
+            SELECT
+                t.id AS track_id,
+                t.name AS track_name,
+                t.source_id,
+                t.uploader_id,
+                s.name AS source_name,
+                s.image_url
+            FROM track t
+            LEFT JOIN source s ON t.source_id = s.id
+        """);
 
         // Build dynamic joins
         appendJoins(sql, tsc);
@@ -57,17 +68,33 @@ public class JdbcTrackDao implements TrackDao{
 
         // Build HAVING clauses for tag counts
         List<String> havingClauses = buildHavingClauses(tsc);
-        if (!havingClauses.isEmpty()) {
-            sql.append(" GROUP BY t.id HAVING ").append(String.join(" AND ", havingClauses));
+        boolean needsGrouping =
+                tsc.getArtistId() != null ||
+                        (tsc.getGlobalTagIds() != null && !tsc.getGlobalTagIds().isEmpty()) ||
+                        (tsc.getUserTagIds() != null && !tsc.getUserTagIds().isEmpty());
+        if (needsGrouping) {
+            sql.append("""
+                GROUP BY
+                    t.id,
+                    t.name,
+                    t.source_id,
+                    t.uploader_id,
+                    s.name,
+                    s.image_url
+            """);
+
+            if (!havingClauses.isEmpty()) {
+                sql.append(" HAVING ").append(String.join(" AND ", havingClauses));
+            }
         }
 
         sql.append(" ORDER BY t.name;");
 
-        List<Track> tracks = new ArrayList<>();
+        List<TrackCoreDto> tracks = new ArrayList<>();
         try {
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql.toString(), params.toArray());
             while (results.next()) {
-                tracks.add(mapRowToTrack(results));
+                tracks.add(mapRowToTrackCoreDto(results));
             }
         } catch (DataAccessException e) {
             throw new DaoException(e.getMessage(), e);
@@ -91,124 +118,6 @@ public class JdbcTrackDao implements TrackDao{
             throw new DaoException(e.getMessage());
         }
         return track;
-    }
-
-    @Override
-    public List<Track> getTracksByName(String name) {
-        if (name == null) name = "";
-        List<Track> tracks = new ArrayList<>();
-        String sql = "SELECT * FROM track WHERE LOWER(name) LIKE LOWER(?)";
-        try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, "%" + name + "%");
-            while (results.next()) {
-                tracks.add(mapRowToTrack(results));
-            }
-        }
-        catch (CannotGetJdbcConnectionException e) {
-            throw new DaoException("Unable to connect to server or database", e);
-        }
-        catch (DataAccessException e) {
-            throw new DaoException(e.getMessage());
-        }
-        return tracks;
-    }
-
-    @Override
-    public List<Track> getTracksByArtist(int artistId) {
-        List<Track> tracks = new ArrayList<>();
-        String sql = "SELECT * FROM track " +
-                     "JOIN track_artist ON track.id = track_artist.track_id " +
-                     "WHERE track_artist.artist_id = ?;";
-        try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, artistId);
-            while (results.next()) {
-                tracks.add(mapRowToTrack(results));
-            }
-        }
-        catch (CannotGetJdbcConnectionException e) {
-            throw new DaoException("Unable to connect to server or database", e);
-        }
-        catch (DataAccessException e) {
-            throw new DaoException(e.getMessage());
-        }
-        return tracks;
-    }
-
-    @Override
-    public List<Track> getTracksBySource(int sourceId) {
-        List<Track> tracks = new ArrayList<>();
-        String sql = "SELECT * FROM track WHERE source_id = ?";
-        try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, sourceId);
-            while (results.next()) {
-                tracks.add(mapRowToTrack(results));
-            }
-        }
-        catch (CannotGetJdbcConnectionException e) {
-            throw new DaoException("Unable to connect to server or database", e);
-        }
-        catch (DataAccessException e) {
-            throw new DaoException(e.getMessage());
-        }
-        return tracks;
-    }
-
-    @Override
-    public List<Track> getTracksByGlobalTags(List<Integer> tagIds) {
-        if (tagIds == null || tagIds.isEmpty()) throw new DaoException("Tried to fetch by tag with null or empty tag list");
-        List<Track> tracks = new ArrayList<>();
-        String placeholders = String.join(",", Collections.nCopies(tagIds.size(), "?"));
-        String sql = "SELECT track.* FROM track " +
-                     "JOIN track_tag_counter AS ttc ON track.id = ttc.track_id " +
-                     "WHERE ttc.tag_id IN (" + placeholders + ") " +
-                     "GROUP BY track.id " +
-                     "HAVING COUNT(DISTINCT ttc.tag_id) = ? " +
-                     "ORDER BY SUM(ttc.vote_count) DESC;";
-        List<Integer> params = new ArrayList<>(tagIds);
-        params.add(tagIds.size());
-        try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, params.toArray());
-            while (results.next()) {
-                tracks.add(mapRowToTrack(results));
-            }
-        }
-        catch (CannotGetJdbcConnectionException e) {
-            throw new DaoException("Unable to connect to server or database", e);
-        }
-        catch (DataAccessException e) {
-            throw new DaoException(e.getMessage());
-        }
-        return tracks;
-    }
-
-    @Override
-    public List<Track> getTracksByUserTags(int userId, List<Integer> tagIds) {
-        if (tagIds == null || tagIds.isEmpty()) throw new DaoException("Tried to fetch by tag with null or empty tag list");
-        List<Track> tracks = new ArrayList<>();
-        String placeholders = String.join(",", Collections.nCopies(tagIds.size(), "?"));
-        String sql = "SELECT track.* FROM track " +
-                     "JOIN track_tag AS tt ON track.id = tt.track_id " +
-                     "WHERE tt.user_id = ? AND tt.tag_id IN (" + placeholders + ") " +
-                     "GROUP BY track.id " +
-                     "HAVING COUNT(DISTINCT tt.tag_id) = ? " +
-                     "ORDER BY track.name;"; // TODO: change to time created
-        List<Integer> params = new ArrayList<>();
-        params.add(userId);
-        params.addAll(tagIds);
-        params.add(tagIds.size());
-        try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, params.toArray());
-            while (results.next()) {
-                tracks.add(mapRowToTrack(results));
-            }
-        }
-        catch (CannotGetJdbcConnectionException e) {
-            throw new DaoException("Unable to connect to server or database", e);
-        }
-        catch (DataAccessException e) {
-            throw new DaoException(e.getMessage());
-        }
-        return tracks;
     }
 
     @Override
@@ -276,6 +185,17 @@ public class JdbcTrackDao implements TrackDao{
         return track;
     }
 
+    private TrackCoreDto mapRowToTrackCoreDto(SqlRowSet rs) {
+        TrackCoreDto trackCoreDto =new TrackCoreDto();
+        trackCoreDto.setId(rs.getInt("track_id"));
+        trackCoreDto.setName(rs.getString("track_name"));
+        trackCoreDto.setSourceId(rs.getObject("source_id", Integer.class));
+        trackCoreDto.setUploaderId(rs.getInt("uploader_id"));
+        trackCoreDto.setSourceName(rs.getString("source_name"));
+        trackCoreDto.setImageUrl(rs.getString("image_url"));
+        return trackCoreDto;
+    }
+
     private void appendJoins(StringBuilder sql, TrackSearchCriteria tsc) {
         if (tsc.getArtistId() != null) {
             sql.append("JOIN track_artist ta ON t.id = ta.track_id ");
@@ -336,5 +256,124 @@ public class JdbcTrackDao implements TrackDao{
 
         return havingClauses;
     }
+
+    // old, redundant methods
+//    @Override
+//    public List<Track> getTracksByName(String name) {
+//        if (name == null) name = "";
+//        List<Track> tracks = new ArrayList<>();
+//        String sql = "SELECT * FROM track WHERE LOWER(name) LIKE LOWER(?)";
+//        try {
+//            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, "%" + name + "%");
+//            while (results.next()) {
+//                tracks.add(mapRowToTrack(results));
+//            }
+//        }
+//        catch (CannotGetJdbcConnectionException e) {
+//            throw new DaoException("Unable to connect to server or database", e);
+//        }
+//        catch (DataAccessException e) {
+//            throw new DaoException(e.getMessage());
+//        }
+//        return tracks;
+//    }
+//
+//    @Override
+//    public List<Track> getTracksByArtist(int artistId) {
+//        List<Track> tracks = new ArrayList<>();
+//        String sql = "SELECT * FROM track " +
+//                "JOIN track_artist ON track.id = track_artist.track_id " +
+//                "WHERE track_artist.artist_id = ?;";
+//        try {
+//            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, artistId);
+//            while (results.next()) {
+//                tracks.add(mapRowToTrack(results));
+//            }
+//        }
+//        catch (CannotGetJdbcConnectionException e) {
+//            throw new DaoException("Unable to connect to server or database", e);
+//        }
+//        catch (DataAccessException e) {
+//            throw new DaoException(e.getMessage());
+//        }
+//        return tracks;
+//    }
+//
+//    @Override
+//    public List<Track> getTracksBySource(int sourceId) {
+//        List<Track> tracks = new ArrayList<>();
+//        String sql = "SELECT * FROM track WHERE source_id = ?";
+//        try {
+//            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, sourceId);
+//            while (results.next()) {
+//                tracks.add(mapRowToTrack(results));
+//            }
+//        }
+//        catch (CannotGetJdbcConnectionException e) {
+//            throw new DaoException("Unable to connect to server or database", e);
+//        }
+//        catch (DataAccessException e) {
+//            throw new DaoException(e.getMessage());
+//        }
+//        return tracks;
+//    }
+//
+//    @Override
+//    public List<Track> getTracksByGlobalTags(List<Integer> tagIds) {
+//        if (tagIds == null || tagIds.isEmpty()) throw new DaoException("Tried to fetch by tag with null or empty tag list");
+//        List<Track> tracks = new ArrayList<>();
+//        String placeholders = String.join(",", Collections.nCopies(tagIds.size(), "?"));
+//        String sql = "SELECT track.* FROM track " +
+//                "JOIN track_tag_counter AS ttc ON track.id = ttc.track_id " +
+//                "WHERE ttc.tag_id IN (" + placeholders + ") " +
+//                "GROUP BY track.id " +
+//                "HAVING COUNT(DISTINCT ttc.tag_id) = ? " +
+//                "ORDER BY SUM(ttc.vote_count) DESC;";
+//        List<Integer> params = new ArrayList<>(tagIds);
+//        params.add(tagIds.size());
+//        try {
+//            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, params.toArray());
+//            while (results.next()) {
+//                tracks.add(mapRowToTrack(results));
+//            }
+//        }
+//        catch (CannotGetJdbcConnectionException e) {
+//            throw new DaoException("Unable to connect to server or database", e);
+//        }
+//        catch (DataAccessException e) {
+//            throw new DaoException(e.getMessage());
+//        }
+//        return tracks;
+//    }
+//
+//    @Override
+//    public List<Track> getTracksByUserTags(int userId, List<Integer> tagIds) {
+//        if (tagIds == null || tagIds.isEmpty()) throw new DaoException("Tried to fetch by tag with null or empty tag list");
+//        List<Track> tracks = new ArrayList<>();
+//        String placeholders = String.join(",", Collections.nCopies(tagIds.size(), "?"));
+//        String sql = "SELECT track.* FROM track " +
+//                "JOIN track_tag AS tt ON track.id = tt.track_id " +
+//                "WHERE tt.user_id = ? AND tt.tag_id IN (" + placeholders + ") " +
+//                "GROUP BY track.id " +
+//                "HAVING COUNT(DISTINCT tt.tag_id) = ? " +
+//                "ORDER BY track.name;"; // to do: change to time created
+//        List<Integer> params = new ArrayList<>();
+//        params.add(userId);
+//        params.addAll(tagIds);
+//        params.add(tagIds.size());
+//        try {
+//            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, params.toArray());
+//            while (results.next()) {
+//                tracks.add(mapRowToTrack(results));
+//            }
+//        }
+//        catch (CannotGetJdbcConnectionException e) {
+//            throw new DaoException("Unable to connect to server or database", e);
+//        }
+//        catch (DataAccessException e) {
+//            throw new DaoException(e.getMessage());
+//        }
+//        return tracks;
+//    }
 
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TagServiceImpl implements TagService{
@@ -26,6 +27,11 @@ public class TagServiceImpl implements TagService{
     @Override
     public Tag getTagById(int id) {
         return tagDao.getTagById(id);
+    }
+
+    @Override
+    public Map<Integer, List<Tag>> getTagsByTrackIds(List<Integer> trackIds) {
+        return tagDao.getTagsByTrackIds(trackIds);
     }
 
     @Override

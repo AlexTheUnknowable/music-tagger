@@ -42,11 +42,10 @@ public class TrackServiceImpl implements TrackService{
             userId = authService.getUserIdFromPrincipal(principal);
         }
 
-        List<Track> tracks = trackDao.getTracksByCriteria(tsc, userId);
+        List<TrackCoreDto> tracks = trackDao.getTracksByCriteria(tsc, userId);
         if (tracks.isEmpty()) return List.of();
-        //TODO: make a new TrackCoreDto including source info and images OH THATS WHERE IMAGE URL GOES IN THE SOURCE TABLE
 
-        List<Integer> trackIds = tracks.stream().map(Track::getId).toList();
+        List<Integer> trackIds = tracks.stream().map(TrackCoreDto::getId).toList();
 
         Map<Integer, List<Artist>> artists = artistService.getArtistsByTrackIds(trackIds);
         Map<Integer, List<Link>> links = linkService.getLinksByTrackIds(trackIds);
@@ -56,15 +55,15 @@ public class TrackServiceImpl implements TrackService{
         return tracks.stream()
                 .map(t -> TrackDto.from(
                         t,
-                        artists.get(t.getId()),
-                        links.get(t.getId()),
-                        tags.get(t.getId()),
-                        aliases.get(t.getId())
+                        artists.getOrDefault(t.getId(), List.of()),
+                        links.getOrDefault(t.getId(), List.of()),
+                        tags.getOrDefault(t.getId(), List.of()),
+                        aliases.getOrDefault(t.getId(), List.of())
                 ))
                 .toList();
     }
 
-    @Override
+    @Override //TODO: change to TrackDto
     public Track getTrackById(int id) {
         return trackDao.getTrackById(id);
     }
