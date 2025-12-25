@@ -6,10 +6,12 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class JdbcTrackArtistDao implements TrackArtistDao {
     private final JdbcTemplate jdbcTemplate;
     public JdbcTrackArtistDao(JdbcTemplate jdbcTemplate) {

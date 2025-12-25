@@ -22,7 +22,7 @@ public class TrackController {
     }
 
     @GetMapping
-    public List<Track> list(@ModelAttribute TrackSearchCriteria tsc, Principal principal) {
+    public List<TrackDto> list(@ModelAttribute TrackSearchCriteria tsc, Principal principal) {
         return trackService.getTracks(tsc, principal);
         // example query: /tracks?name=Imagine&artistId=3&globalTagIds=1&globalTagIds=2&userTagIds=5
     }

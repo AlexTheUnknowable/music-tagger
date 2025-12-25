@@ -15,7 +15,7 @@ DROP TABLE IF EXISTS track_tag_downvote CASCADE;
 DROP TABLE IF EXISTS track_tag CASCADE;
 DROP TABLE IF EXISTS artist_source CASCADE;
 DROP TABLE IF EXISTS track_artist CASCADE;
-DROP TABLE IF EXISTS track_alias CASCADE;
+DROP TABLE IF EXISTS alias CASCADE;
 DROP TABLE IF EXISTS link_downvote CASCADE;
 DROP TABLE IF EXISTS link CASCADE;
 DROP TABLE IF EXISTS tag CASCADE;
@@ -63,7 +63,7 @@ CREATE TABLE tag (
 
 CREATE TABLE link (
     id SERIAL PRIMARY KEY,
-    origin_type TEXT NOT NULL CHECK (origin_type IN ('track','artist','source')),
+    origin_type TEXT NOT NULL CHECK (origin_type IN ('TRACK','ARTIST','SOURCE')),
     origin_id INTEGER NOT NULL,
     url TEXT NOT NULL,
     uploader_id INTEGER REFERENCES users(id),
@@ -77,7 +77,7 @@ CREATE TABLE link_downvote (
     UNIQUE(link_id, user_id)
 );
 
-CREATE TABLE track_alias (
+CREATE TABLE alias (
     id SERIAL PRIMARY KEY,
     track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
     alias TEXT NOT NULL,
@@ -183,21 +183,9 @@ CREATE INDEX idx_track_merge_log_pair ON track_merge_log (original_id, duplicate
 -- Users
 -- Password for all users is password
 INSERT INTO users (username, password_hash, role) VALUES
-    ('admin', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_ADMIN'),
     ('user1', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_USER'),
     ('user2', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_USER'),
-    ('user3', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_USER');
-
-INSERT INTO artist (name, uploader_id) VALUES
-    ('Toby Fox', 0);
-
-INSERT INTO source (name, uploader_id) VALUES
-    ('DELTARUNE Chapter 1 Soundtrack', 0);
-
-INSERT INTO track (name, source_id, uploader_id) VALUES
-    ('ANOTHER HIM', 0, 0);
-
-INSERT INTO tag (name, uploader_id) VALUES
-    ('Ambient', 0);
+    ('user3', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_USER'),
+	('admin', '$2a$10$tmxuYYg1f5T0eXsTPlq/V.DJUKmRHyFbJ.o.liI1T35TFbjs2xiem', 'ROLE_ADMIN');
 
 COMMIT TRANSACTION;

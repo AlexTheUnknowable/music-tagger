@@ -13,8 +13,10 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import com.alextheunknowable.musictagger.model.User;
+import org.springframework.stereotype.Repository;
 
 @Component
+@Repository
 public class JdbcUserDao implements UserDao {
 
     private final JdbcTemplate jdbcTemplate;
@@ -27,7 +29,7 @@ public class JdbcUserDao implements UserDao {
     public User getUserById(int userId) {
 
         User user = null;
-        String sql = "SELECT * FROM users WHERE user_id = ?";
+        String sql = "SELECT * FROM users WHERE id = ?";
 
         try {
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
@@ -112,7 +114,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public User updateUser(User user) {
         User updatedUser = null;
-        String sql = "UPDATE users SET username = ?, password_hash = ?, role = ? WHERE user_id = ?;";
+        String sql = "UPDATE users SET username = ?, password_hash = ?, role = ? WHERE id = ?;";
         try {
             int numberOfRows = jdbcTemplate.update(sql, user.getUsername(), user.getHashedPassword(), user.getRole(), user.getId());
             if (numberOfRows == 0) {
@@ -128,7 +130,7 @@ public class JdbcUserDao implements UserDao {
 
     private User mapRowToUser(SqlRowSet rs) {
         User user = new User();
-        user.setId(rs.getInt("user_id"));
+        user.setId(rs.getInt("id"));
         user.setUsername(rs.getString("username"));
         user.setHashedPassword(rs.getString("password_hash"));
         user.setRole(rs.getString("role"));

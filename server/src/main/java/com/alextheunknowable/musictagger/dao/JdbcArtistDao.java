@@ -7,9 +7,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class JdbcArtistDao implements ArtistDao{
     private final JdbcTemplate jdbcTemplate;
 
