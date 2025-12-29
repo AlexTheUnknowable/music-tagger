@@ -78,7 +78,7 @@ public class JdbcArtistDao implements ArtistDao{
         String sql = """
         SELECT ar.*, ta.track_id
         FROM artist AS ar
-        JOIN track_artist AS ta ON ta.artist_id = ar.artist.id
+        JOIN track_artist AS ta ON ta.artist_id = ar.id
         WHERE ta.track_id IN (%s)
         ORDER BY ta.track_id, ar.id
         """.formatted(placeholders);

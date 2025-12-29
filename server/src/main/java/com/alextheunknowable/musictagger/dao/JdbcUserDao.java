@@ -90,7 +90,7 @@ public class JdbcUserDao implements UserDao {
         String insertUserSql = "INSERT INTO users " +
                 "(username, password_hash, role) " +
                 "VALUES (?, ?, ?) " +
-                "RETURNING user_id";
+                "RETURNING id";
 
         if (newUser.getHashedPassword() == null) {
             throw new DaoException("User cannot be created with null password");
@@ -99,7 +99,7 @@ public class JdbcUserDao implements UserDao {
             String passwordHash = new BCryptPasswordEncoder().encode(newUser.getHashedPassword());
 
             Integer userId = jdbcTemplate.queryForObject(insertUserSql, int.class,
-                    newUser.getUsername(), passwordHash, newUser.getRole(), new BigDecimal("0.00"));
+                    newUser.getUsername(), passwordHash, newUser.getRole());
             user =  getUserById(userId);
         }
         catch (CannotGetJdbcConnectionException e) {

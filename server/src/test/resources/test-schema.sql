@@ -1,14 +1,27 @@
--- database m2_final_project
+-- database music-tagger
 BEGIN TRANSACTION;
 
 -- *************************************************************************************************
 -- Drop all db objects in the proper order
 -- *************************************************************************************************
-DROP TABLE IF EXISTS card_type CASCADE;
-DROP TABLE IF EXISTS storeitem CASCADE;
-DROP TABLE IF EXISTS carditem CASCADE;
-DROP TABLE IF EXISTS type CASCADE;
-DROP TABLE IF EXISTS card CASCADE;
+DROP TABLE IF EXISTS source_merge_log CASCADE;
+DROP TABLE IF EXISTS source_merge_vote CASCADE;
+DROP TABLE IF EXISTS artist_merge_log CASCADE;
+DROP TABLE IF EXISTS artist_merge_vote CASCADE;
+DROP TABLE IF EXISTS track_merge_log CASCADE;
+DROP TABLE IF EXISTS track_merge_vote CASCADE;
+DROP TABLE IF EXISTS track_tag_counter CASCADE;
+DROP TABLE IF EXISTS track_tag_downvote CASCADE;
+DROP TABLE IF EXISTS track_tag CASCADE;
+DROP TABLE IF EXISTS artist_source CASCADE;
+DROP TABLE IF EXISTS track_artist CASCADE;
+DROP TABLE IF EXISTS alias CASCADE;
+DROP TABLE IF EXISTS link_downvote CASCADE;
+DROP TABLE IF EXISTS link CASCADE;
+DROP TABLE IF EXISTS tag CASCADE;
+DROP TABLE IF EXISTS track CASCADE;
+DROP TABLE IF EXISTS source CASCADE;
+DROP TABLE IF EXISTS artist CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
 -- *************************************************************************************************
@@ -17,49 +30,150 @@ DROP TABLE IF EXISTS users CASCADE;
 
 --users (name is pluralized because 'user' is a SQL keyword)
 CREATE TABLE users (
-	user_id SERIAL,
-	username varchar(50) NOT NULL UNIQUE,
-	password_hash varchar(200) NOT NULL,
-	role varchar(50) NOT NULL,
-	CONSTRAINT PK_user PRIMARY KEY (user_id)
+	id SERIAL PRIMARY KEY,
+	username TEXT NOT NULL UNIQUE,
+	password_hash TEXT NOT NULL,
+	role TEXT NOT NULL
 );
 
-CREATE TABLE card (
-    card_id SERIAL,
-    name varchar(50) NOT NULL UNIQUE,
-    rarity int NOT NULL,
-    CONSTRAINT PK_card PRIMARY KEY (card_id)
+CREATE TABLE artist (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    uploader_id INTEGER REFERENCES users(id)
 );
 
-CREATE TABLE type (
-    type_id SERIAL,
-    name varchar(10) NOT NULL,
-    CONSTRAINT PK_type PRIMARY KEY (type_id)
+CREATE TABLE source (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    uploader_id INTEGER REFERENCES users(id)
 );
 
-CREATE TABLE carditem (
-    carditem_id SERIAL,
-    user_id int NOT NULL,
-    card_id int NOT NULL,
-    CONSTRAINT PK_carditem PRIMARY KEY (carditem_id),
-    CONSTRAINT FK_carditem_user FOREIGN KEY (user_id) REFERENCES users(user_id),
-    CONSTRAINT FK_carditem_card FOREIGN KEY (card_id) REFERENCES card(card_id)
+CREATE TABLE track (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+	source_id INTEGER REFERENCES source(id),
+    uploader_id INTEGER REFERENCES users(id)
 );
 
-CREATE TABLE storeitem (
-    storeitem_id SERIAL,
-    carditem_id int NOT NULL UNIQUE,
-    price numeric(10, 2) NOT NULL,
-    CONSTRAINT PK_storeitem PRIMARY KEY (storeitem_id),
-    CONSTRAINT FK_storeitem_carditem FOREIGN KEY(carditem_id) REFERENCES carditem(carditem_id)
+CREATE TABLE tag (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    uploader_id INTEGER REFERENCES users(id)
 );
 
-CREATE TABLE card_type (
-    card_id int NOT NULL,
-    type_id int NOT NULL,
-    CONSTRAINT PK_card_type PRIMARY KEY (card_id, type_id),
-    CONSTRAINT FK_card_type_card FOREIGN KEY (card_id) REFERENCES card(card_id),
-    CONSTRAINT FK_card_type_type FOREIGN KEY (type_id) REFERENCES type(type_id)
+CREATE TABLE link (
+    id SERIAL PRIMARY KEY,
+    origin_type TEXT NOT NULL CHECK (origin_type IN ('TRACK','ARTIST','SOURCE')),
+    origin_id INTEGER NOT NULL,
+    url TEXT NOT NULL,
+    uploader_id INTEGER REFERENCES users(id),
+    UNIQUE(origin_type, origin_id, url)
 );
+
+CREATE TABLE link_downvote (
+    id SERIAL PRIMARY KEY,
+    link_id INTEGER NOT NULL REFERENCES link(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(link_id, user_id)
+);
+
+CREATE TABLE alias (
+    id SERIAL PRIMARY KEY,
+    track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
+    alias TEXT NOT NULL,
+    uploader_id INTEGER REFERENCES users(id),
+    UNIQUE(track_id, alias)
+);
+
+CREATE TABLE track_artist (
+    track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
+    artist_id INTEGER NOT NULL REFERENCES artist(id) ON DELETE CASCADE,
+    PRIMARY KEY(track_id, artist_id)
+);
+
+CREATE TABLE artist_source (
+    artist_id INTEGER NOT NULL REFERENCES artist(id) ON DELETE CASCADE,
+	source_id INTEGER NOT NULL REFERENCES source(id) ON DELETE CASCADE,
+    PRIMARY KEY(artist_id, source_id)
+);
+
+CREATE TABLE track_tag (
+    id SERIAL PRIMARY KEY,
+    track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
+    tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(track_id, tag_id, user_id)
+);
+
+CREATE TABLE track_tag_downvote (
+    id SERIAL PRIMARY KEY,
+    track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
+    tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(track_id, tag_id, user_id)
+);
+
+CREATE TABLE track_tag_counter (
+    track_id INTEGER NOT NULL REFERENCES track(id) ON DELETE CASCADE,
+    tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
+    vote_count INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY(track_id, tag_id)
+);
+
+CREATE TABLE track_merge_vote (
+    id SERIAL PRIMARY KEY,
+    original_id INTEGER NOT NULL REFERENCES track(id),
+    duplicate_id INTEGER NOT NULL REFERENCES track(id),
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    UNIQUE(original_id, duplicate_id, user_id)
+);
+
+CREATE TABLE track_merge_log (
+    id SERIAL PRIMARY KEY,
+    original_id INTEGER NOT NULL REFERENCES track(id),
+    duplicate_id INTEGER NOT NULL REFERENCES track(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    admin_id INTEGER REFERENCES users(id)
+);
+
+CREATE TABLE artist_merge_vote (
+    id SERIAL PRIMARY KEY,
+    original_id INTEGER NOT NULL REFERENCES artist(id),
+    duplicate_id INTEGER NOT NULL REFERENCES artist(id),
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    UNIQUE(original_id, duplicate_id, user_id)
+);
+
+CREATE TABLE artist_merge_log (
+    id SERIAL PRIMARY KEY,
+    original_id INTEGER NOT NULL REFERENCES artist(id),
+    duplicate_id INTEGER NOT NULL REFERENCES artist(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    admin_id INTEGER REFERENCES users(id)
+);
+
+CREATE TABLE source_merge_vote (
+    id SERIAL PRIMARY KEY,
+    original_id INTEGER NOT NULL REFERENCES source(id),
+    duplicate_id INTEGER NOT NULL REFERENCES source(id),
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    UNIQUE(original_id, duplicate_id, user_id)
+);
+
+CREATE TABLE source_merge_log (
+    id SERIAL PRIMARY KEY,
+    original_id INTEGER NOT NULL REFERENCES source(id),
+    duplicate_id INTEGER NOT NULL REFERENCES source(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    admin_id INTEGER REFERENCES users(id)
+);
+
+CREATE INDEX idx_track_tag_track_tag ON track_tag (track_id, tag_id);
+CREATE INDEX idx_track_tag_downvote_user_tag_track ON track_tag_downvote (user_id, tag_id, track_id);
+CREATE INDEX idx_track_tag_counter_tag_count ON track_tag_counter (tag_id, vote_count DESC);
+CREATE INDEX idx_track_artist_artist_track ON track_artist (artist_id, track_id);
+CREATE INDEX idx_link_origin ON link (origin_type, origin_id);
+CREATE INDEX idx_track_merge_vote_pair ON track_merge_vote (original_id, duplicate_id);
+CREATE INDEX idx_track_merge_log_pair ON track_merge_log (original_id, duplicate_id);
 
 COMMIT TRANSACTION;
