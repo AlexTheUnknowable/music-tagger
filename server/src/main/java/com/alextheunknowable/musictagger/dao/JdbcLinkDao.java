@@ -87,7 +87,7 @@ public class JdbcLinkDao implements LinkDao{
         Link link = null;
         String insertLinkSql = "INSERT INTO link (origin_type, origin_id, url, uploader_id) VALUES (?, ?, ?, ?) RETURNING id";
         try {
-            int linkId = jdbcTemplate.queryForObject(insertLinkSql, int.class, newLink.getOriginType(), newLink.getOriginId(), newLink.getUrl(), newLink.getUploaderId());
+            int linkId = jdbcTemplate.queryForObject(insertLinkSql, int.class, newLink.getOriginType().name(), newLink.getOriginId(), newLink.getUrl(), newLink.getUploaderId());
             link = getLinkById(linkId);
         }
         catch (NullPointerException e) {

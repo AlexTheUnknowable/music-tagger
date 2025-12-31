@@ -7,6 +7,11 @@ public class Source {
     private int uploaderId;
 
     public Source() {}
+    public Source(String name, String imageUrl, int uploaderId) {
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.uploaderId = uploaderId;
+    }
     public Source(int id, String name, String imageUrl, int uploaderId) {
         this.id = id;
         this.name = name;
